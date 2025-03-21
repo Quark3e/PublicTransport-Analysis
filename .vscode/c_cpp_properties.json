@@ -4,8 +4,9 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${vcpkgRoot}/x64-windows/include",
-                "${vcpkgRoot}/C:\\Users\\berkh\\Libraries\\vcpkg\\packages\\protobuf_x64-windows\\include"
+                "${vcpkgRoot}/x64-windows/**",
+                "C:/Users/berkh/Libraries/vcpkg/packages/abseil_x64-windows/include/**",
+                "C:/Users/berkh/Libraries/vcpkg/packages/protobuf_x64-windows/include/**"
             ],
             "defines": [
                 "_DEBUG",
