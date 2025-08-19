@@ -9,85 +9,341 @@
 #include <fstream>
 #include <string>
 
+
+struct STE {
+    int32_t delay;  // [1]
+    int64_t time;   // [2]
+    // int32_t uncertainty;     // [3] // uncertainty is avoided because it appears that data point isnt consistent
+};
+struct STU {
+    uint32_t stop_sequence; // [1]
+    STE arrival;    // [2]
+    STE departure;  // [3]
+    std::string stop_id;    // [4]
+    int32_t schedule_relationship;  // [5]
+};
+struct TrpDsc {
+    std::string trip_id;    // [1]
+    std::string start_date; // [3]
+    int32_t schedule_relationship;  // [4]
+};
+struct Vhcl {
+    std::string id;
+};
+struct TrpUpd {
+    uint64_t            timestamp{0};
+    TrpDsc              trip{"", "", 0};
+    std::vector<STU>    stop_time_updates;
+    Vhcl                vehicle{""};
+};
+
+TrpUpd ParseDebugString(std::string _strToParse);
+
+size_t findSubstr(std::string _toFind, std::string _toSearch);
+
 int main(int argc, char** argv) {
+    std::cout << "Program start:----------\n" << std::endl;
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
     std::string defaultPD_file("C:/Users/berkh/Projects/Github_repo/PublicTransport-Analysis/dataset/realtime_historical_data/sl-ServiceAlerts-2025-01-22/sl/ServiceAlerts/2025/01/22/09/sl-servicealerts-2025-01-22T09-29-28Z.pb");
-
-    transit_realtime::Alert alrt;
     transit_realtime::TripUpdate trpUpdate;
-    transit_realtime::TripDescriptor trpDesc;
-    transit_realtime::FeedEntity entity;
-    transit_realtime::FeedMessage feedMessage;
-    transit_realtime::VehiclePosition vehiclePosition;
-    
     std::fstream testDataFile;
+
+    // std::fstream stdout_file("C:/Users/berkh/Projects/Github_repo/PublicTransport-Analysis/cpp_program_output.txt", std::ios::out);
+
+    std::string path_pd_file="";
     if(argc > 1) {
-        testDataFile.open(argv[1], std::ios::in | std::ios::binary);
-        // ("C:/Users/berkh/Projects/Github_repo/PublicTransport-Analysis/dataset/realtime_historical_data/sl-TripUpdates-2025-01-22/sl/TripUpdates/2025/01/22/00/sl-tripupdates-2025-01-21T23-59-38Z.pb", std::ios::in | std::ios::binary)
+        path_pd_file = argv[1];
     }
     else {
-        // std::cerr << "no file given..." <<std::endl;
-        // return -1;
         std::cout << "NOTE: using defaultPD_file." << std::endl;
-        testDataFile.open(defaultPD_file, std::ios::in | std::ios::binary);
+        path_pd_file = defaultPD_file;
     }
+    testDataFile.open(path_pd_file, std::ios::in | std::ios::binary);
 
-    if (!testDataFile) {
+    if (!testDataFile.is_open()) {
         std::cerr << "Failed to open file." << std::endl;
         return -1;
     }
-
-
     trpUpdate.ParseFromIstream(&testDataFile);
-    alrt.ParseFromIstream(&testDataFile);
-    trpDesc.ParseFromIstream(&testDataFile);
-    // entity.ParseFromIstream(&testDataFile);
-    // feedMessage.ParseFromIstream(&testDataFile);
-    vehiclePosition.ParseFromIstream(&testDataFile);
 
+    std::string val = "";
+    size_t departure_cnt = 0;
+    // stdout_file << trpUpdate.DebugString() << " \n\n";
+    
+    std::cout << " num trips to parse: " << trpUpdate.stop_time_update_size() << std::endl;
+    std::cout << "--- Parsing started ---" << std::endl;
+    std::vector<TrpUpd> parsed_data;
 
-
-    // std::cout << "--- TripUpdate: " << trpUpdate.DebugString() << std::endl; system("pause");
-    // std::cout << "--- TripUpdate size: " << trpUpdate.ByteSizeLong() << std::endl; system("pause");
-    // std::cout << "--- TripUpdate size: " << trpUpdate.ByteSize() << std::endl; system("pause");
-    // std::cout << "--- TripUpdate description: " << trpUpdate.GetDescriptor()->DebugString() << std::endl; system("pause");
-    // std::cout << "--- TripUpdate field count: " << trpUpdate.GetDescriptor()->field_count() << std::endl; system("pause");
-    // std::cout << "--- TripUpdate field name: " << trpUpdate.GetDescriptor()->FindFieldByName("trip")->name() << std::endl; system("pause");
-    // std::cout << "--- TripUpdate field number: " << trpUpdate.GetDescriptor()->FindFieldByName("trip")->number() << std::endl; system("pause");
-    // std::cout << "--- TripUpdate StopTimeUpdate size: " << trpUpdate.stop_time_update_size() << std::endl; system("pause");
-    // std::cout << "--- TripUpdate StopTimeUpdate field count: " << trpUpdate.stop_time_update(0).GetDescriptor()->field_count() << std::endl; system("pause");
-    // std::cout << "--- TripUpdate StopTimeUpdate field name: " << trpUpdate.stop_time_update(0).GetDescriptor()->FindFieldByName("arrival")->name() << std::endl; system("pause");
-    // std::cout << "--- TripUpdate StopTimeUpdate field number: " << trpUpdate.stop_time_update(0).GetDescriptor()->FindFieldByName("arrival")->number() << std::endl; system("pause");
-    // return 0;
-    // std::cout << trpUpdate.stop_time_update(0).GetDescriptor() << std::endl;
-
-    auto trp = trpUpdate.trip();
-    std::cout << trp.trip_id() << ", "<<trp.route_id()<<": ["<<trp.start_date()<<" | "<<trp.start_time()<<"_"<<trp.direction_id()<<"]"<<trp.schedule_relationship() << std::endl;
-    std::cout << "delay                : " << trpUpdate.delay()<<std::endl;
-    std::cout << "stop time update size: " << trpUpdate.stop_time_update_size() << std::endl;
-    std::cout << "stop_time_updates:-------------------" << std::endl;
-    system("pause");
     for(size_t i=0; i<trpUpdate.stop_time_update_size(); i++) {
-        auto& stu = trpUpdate.stop_time_update(i);
-        std::cout << "i:"<<std::setw(3)<<i<<": ";
-        std::cout << stu.stop_sequence() << " | ";
-        std::cout << stu.stop_id() << " | ";
-        std::cout << stu.stop_sequence() << " | ";
-        std::cout << stu.departure_occupancy_status() << " | ";
-        std::cout << stu.schedule_relationship() << " | ";
-        std::cout << std::endl;
+        // std::cout << "  stop_time_update["<<i<<"]\n";
+        // break;
+        if(trpUpdate.stop_time_update(i).has_departure()) {
+            try {
+                parsed_data.push_back(ParseDebugString(trpUpdate.stop_time_update(i).DebugString()));
+            }
+            catch(const std::exception& e) {
+                std::cout << " - Exception met at i["<<i<<"]: " << e.what() << std::endl;
+            }
+            
+            // std::cout << trpUpdate.stop_time_update(i).DebugString() << " \n\n";
+            // departure_cnt++;
+            
+        }
+        // if(departure_cnt>5) break;
     }
-    std::cout << "tripProperties:-------------------" << std::endl;
-    system("pause");
-    auto trpProp = trpUpdate.trip_properties();
-    std::cout << "trip_id    : " << trpProp.trip_id() << std::endl;
-    std::cout << "start_date : " << trpProp.start_date() << std::endl;
-    std::cout << "start_time : " << trpProp.start_time() << std::endl;
-    std::cout << "shape_id   : " << trpProp.shape_id() << std::endl;
+    std::cout << "--- Parsing finished ---" << std::endl;
+    std::cout << "successfully parsed: "<<parsed_data.size() << " trips."<<std::endl;
 
+    std::vector<std::string> TrpDsc_schedule_relationship{
+        "SCHEDULED",
+        "ADDED",
+        "UNSCHEDULED",
+        "CANCELED",
+        "REPLACEMENT",
+        "DUPLICATED",
+        "DELETED",
+        "NEW"
+    };
+    std::vector<std::string> STU_schedule_relationship{
+        "SCHEDULED",
+        "SKIPPED",
+        "NO_DATA",
+        "UNSCHEDULED"
+    };
+
+    std::cout << "\n--- Saving parsed data into file with name: \""<<path_pd_file.substr(0, path_pd_file.size()-3)+"__parsed_data.txt\""<<std::endl;
+    std::fstream file_parsedData("tripUpdates_parsed_data.txt", std::ios::out);
+    if(!file_parsedData.is_open()) {
+        std::cerr << "Failed to open parsedData output file." << std::endl;
+        return 1;
+    }
+
+    file_parsedData << "{\n";
+    file_parsedData << "  \"Trips\" : [";
+    for(size_t i=0; i<parsed_data.size(); i++) {
+        auto dat = parsed_data.at(i);
+        file_parsedData << "{\n";
+        file_parsedData << "    \"timestamp\" : " << dat.timestamp << ",\n";
+        file_parsedData << "    \"trip\" : {\n";
+        file_parsedData << "        \"trip_id\" : \"" << dat.trip.trip_id << "\",\n";
+        file_parsedData << "        \"start_date\" : \"" << dat.trip.start_date << "\",\n";
+        file_parsedData << "        \"scheduled_relationship\" : \"" << TrpDsc_schedule_relationship.at(dat.trip.schedule_relationship) << "\"\n";
+        file_parsedData << "    },\n";
+        file_parsedData << "    \"stop_time_updates\" : [";
+        for(size_t ii=0; ii<dat.stop_time_updates.size(); ii++) {
+            auto dat_stu = dat.stop_time_updates.at(ii);
+        file_parsedData << "{\n";
+        file_parsedData << "        \"stop_sequence\" : " << dat_stu.stop_sequence << ",\n";
+        file_parsedData << "        \"arrival\" : {\n";
+        file_parsedData << "            \"delay\" : " << dat_stu.arrival.delay << ",\n";
+        file_parsedData << "            \"time\" : " << dat_stu.arrival.time << "\n";
+        file_parsedData << "        },\n";
+        file_parsedData << "        \"departure\" : {\n";
+        file_parsedData << "            \"delay\" : " << dat_stu.departure.delay << ",\n";
+        file_parsedData << "            \"time\" : " << dat_stu.departure.time << "\n";
+        file_parsedData << "        },\n";
+        file_parsedData << "        \"stop_id\" : \"" << dat_stu.stop_id << "\",\n";
+        file_parsedData << "        \"schedule_relationship\" : \"" << STU_schedule_relationship.at(dat_stu.schedule_relationship) << "\"\n";
+        file_parsedData << "    " << (ii+1!=dat.stop_time_updates.size()? "}," : "}") << "";
+        }
+        file_parsedData << "], \n";
+        file_parsedData << "    \"vehicle\" : {\n";
+        file_parsedData << "        \"id\" : \"" << dat.vehicle.id << "\"\n";
+        file_parsedData << "    }\n";
+        file_parsedData << "}";
+        if(i<parsed_data.size()-1) file_parsedData << ",";
+    }
+    file_parsedData << "]}\n";
+
+    std::cout << "\nProgram end:  ----------" << std::endl;
+    
+    // stdout_file.close();
     testDataFile.close();
+    file_parsedData.close();
     google::protobuf::ShutdownProtobufLibrary();
-
+    
     return 0;
 }
+
+/// ----------------------------------------------------------------------
+
+
+
+TrpUpd ParseDebugString(std::string _strToParse) {
+    if(_strToParse.size()==0) throw std::runtime_error("Empty string");
+    if(_strToParse.substr(0, 11) != "departure {") throw std::runtime_error("String doesn't contain initial signature substr \"departure {\"");
+
+    TrpUpd _result{0, {"", "", 0}, std::vector<STU>{}, {""}};
+    std::string _isol = "";
+    size_t _colonPos = 0;
+    size_t _refIdx = 0;
+    _colonPos = _strToParse.find(':');    //first colon: 'schedule_time'
+    if(_refIdx==std::string::npos) throw std::runtime_error("No colons found in string.");
+    
+    _isol = _strToParse.substr(_colonPos+1, (_refIdx=_strToParse.find('\n', _colonPos))-_colonPos-1); // isolate timestamp substr whilst also updating _refIdx to hold the newline char that follows the colon.
+    _result.timestamp = std::stoi(_isol);
+    
+
+    if(_strToParse[_refIdx+3]!='1') throw std::runtime_error("String doesn't contain identifier number of 'trip'. Raw string of line:\""+_strToParse.substr(_refIdx+1, _strToParse.find('\n', _refIdx+1)));
+    _refIdx = _refIdx + 6;  //update idx to hold index to the newline char after opening curly braces for 'trip'
+    
+    /// Parse TripDescriptor values.
+    do {
+        _colonPos = _strToParse.find(':', _refIdx);
+        int _colonsID = std::stoi(_strToParse.substr(_refIdx+1, _colonPos-_refIdx-1));
+        switch (_colonsID) {
+        case 1: // trip_id [string]
+            _isol = _strToParse.substr(_colonPos+3, _strToParse.find('\"', _colonPos+3)-_colonPos-3);
+            _result.trip.trip_id = _isol;
+            break;
+        case 3: // start_date [string]
+            _isol = _strToParse.substr(_colonPos+3, _strToParse.find('\"', _colonPos+3)-_colonPos-3);
+            _result.trip.start_date = _isol;
+            break;
+        case 4: // schedule_relationship [int32]
+            _isol = _strToParse.substr(_colonPos+2, _strToParse.find('\n', _colonPos));
+            _result.trip.schedule_relationship = std::stoi(_isol);
+            break;
+        default:
+            break;
+        }
+        _refIdx = _strToParse.find('\n', _colonPos); //set _refIdx to index to the newline of same line as found colon
+    } while (_strToParse.at(_refIdx+3)!='}'); //while the char at next line's 3rd index isn't the closing braces for TripDescriptor
+    
+
+    _refIdx = _strToParse.find('\n', _refIdx+3); //set _refIdx to the newline char of the closing braces
+    
+    /// Parse StopTimeUpdate's
+    while(_strToParse.at(_refIdx+3)=='2') {
+        _strToParse.erase(0, _refIdx+3+3); //erase everything up 'til the newline character following the stop_time_update's opening braces
+        _refIdx = 0;
+        /// parse an instance of stop_time_update
+
+
+        _result.stop_time_updates.push_back({
+            0,
+            {0, 0},
+            {0, 0},
+            "",
+            0
+        });
+        auto& stu_ref = _result.stop_time_updates.back();
+
+        bool tempBreak = false;
+        do {
+            int _id = std::stoi(_strToParse.substr(_refIdx+1, 6));
+            
+            STE* stu_ste__tempPtr = nullptr;
+            switch (_id) {
+            case 1: // stop_sequence [uint32]
+                _colonPos = _strToParse.find(':', _refIdx);
+                _isol = _strToParse.substr(_colonPos+2, _strToParse.find('\"', _colonPos+2)-_colonPos-2);
+                // std::cout << "stop_sequence: " << static_cast<uint32_t>(std::stoul(_isol)) << "\n";
+                // std::cout << _isol << "\n\n";
+
+                // // tempBreak = true;
+                // exit(0);
+
+                stu_ref.stop_sequence = static_cast<uint32_t>(std::stoul(_isol));
+                _refIdx = _strToParse.find('\n', _colonPos);
+                break;
+            case 2: // arrival [StopTimeEvent]
+                stu_ste__tempPtr = &stu_ref.arrival;
+            case 3: // departure [StopTimeEvent]
+                if(!stu_ste__tempPtr) stu_ste__tempPtr = &stu_ref.departure;
+                
+                _refIdx = _strToParse.find('\n', _refIdx+1); //set _refIdx to index to newline after opening curly braces of STE.
+                if(_strToParse.at(_refIdx+5)=='}') throw std::runtime_error(std::string("stop_time_event at [")+std::to_string(_result.stop_time_updates.size())+"] has its closing braces immedately after opening.");
+                
+                /// parse STE values
+                do {
+                    size_t __colonPos = _strToParse.find(':', _refIdx);
+                    int __id = std::stoi(_strToParse.substr(_refIdx+1, __colonPos-_refIdx-1));
+                    switch (__id) {
+                    case 1: // delay [int32]
+                        _isol = _strToParse.substr(__colonPos+2, _strToParse.find('\n', __colonPos+1)-__colonPos-1);
+                        (*stu_ste__tempPtr).delay = static_cast<int32_t>(std::stoull(_isol));
+                        // std::cout << "\"" << _isol << "\" :: "<<(*stu_ste__tempPtr).delay << std::endl;
+                        break;
+                    case 2: // time [int64]
+                        (*stu_ste__tempPtr).time = static_cast<int64_t>(std::stoll(_strToParse.substr(__colonPos+1, _strToParse.find('\n', __colonPos+1)-__colonPos-1)));
+                        break;
+                    default:
+                        break;
+                    }
+                    _refIdx = _strToParse.find('\n', __colonPos);
+                } while (_strToParse.at(_refIdx+5)!='}');
+
+                _refIdx = _strToParse.find('\n', _refIdx+1); //set _refIdx to index to newline after closing curly braces of STE.
+                break;
+            case 4: {// stop_id [string]
+                size_t _quoteMarkPos = _strToParse.find('\"', _refIdx);
+                _isol = _strToParse.substr(_quoteMarkPos+1, _strToParse.find('\"', _quoteMarkPos+1)-_quoteMarkPos-1);
+                stu_ref.stop_id = _isol;
+                _refIdx = _strToParse.find('\n', _quoteMarkPos); // locate and set _refIdx to following newline
+                
+                break;
+            }
+            case 5: // schedule_relationship [int32]
+                _colonPos = _strToParse.find(':', _refIdx);
+                stu_ref.schedule_relationship = static_cast<int32_t>(std::stoi(_strToParse.substr(_colonPos+2, _strToParse.find('\n', _colonPos)-_colonPos-2)));
+                _refIdx = _strToParse.find('\n', _colonPos); // locate and set _refIdx to following newline
+                break;
+            default:
+                break;
+            }
+            // _refIdx = _strToParse.find('\n', _colonPos); //set _refIdx to index to the newline of same line as found colon
+
+            if(tempBreak) break;
+        } while (_strToParse.at(_refIdx+3)!='}'); //while the char at next line's 3rd index isn't the closing braces for TripDescriptor
+        
+        /// end parsing of an instance of stop_time_update
+
+        // std::cout << _result.timestamp << std::endl;
+        // std::cout << _result.stop_time_updates.at(0).stop_sequence << std::endl;
+        // std::cout << "arrival: delay: "<<_result.stop_time_updates.at(0).arrival.delay << std::endl;
+        // std::cout << "arrival: time : "<<_result.stop_time_updates.at(0).arrival.time << std::endl;
+        // std::cout << "departure: delay: "<<_result.stop_time_updates.at(0).departure.delay << std::endl;
+        // std::cout << "departure: time : "<<_result.stop_time_updates.at(0).departure.time << std::endl;
+        // std::cout << "\""<<_result.stop_time_updates.at(0).stop_id << "\"" << std::endl;
+        // std::cout << _result.stop_time_updates.at(0).schedule_relationship << "\n" << std::endl;
+
+        _refIdx = _strToParse.find('\n', _refIdx+1); //set _refIdx to index to the newline char for the closing braces for the stop_time_update '  }\n'
+        if(_refIdx==std::string::npos) return _result;
+    }
+
+    _refIdx = _strToParse.find(':', _refIdx+1);
+
+    if(_strToParse.at(_refIdx-1)=='1') {
+        _isol = _strToParse.substr(_refIdx+3, _strToParse.find('\"', _refIdx+3)-_refIdx-3);
+        _result.vehicle.id = _isol;
+    }
+
+
+    return _result;
+}
+
+
+size_t findSubstr(std::string _toFind, std::string _toSearch) {
+    if(_toFind.size()==0) throw std::runtime_error("findSubstr(std::string, std::string) argument for the string to find cannot be empty.");
+    else if(_toSearch.size()==0) throw std::runtime_error("findSubstr(std::string, std::string) argument for the string to search cannot be empty.");
+    
+    if(_toFind.size() > _toSearch.size()) throw std::runtime_error("findSubstr(std::string, std::string): invalid arguments.");
+    else if(_toFind.size() == _toSearch.size()) {
+        if(_toFind==_toSearch) return 0;
+        else return std::string::npos;
+    }
+    
+    bool matchFound = false;
+    for(size_t i=0; i<_toSearch.size()-_toFind.size(); i++) {
+        if(_toSearch[i]==_toFind[0]) {
+            for(size_t ii=0; ii<_toFind.size(); ii++) {
+                if(_toSearch[i+ii]!=_toFind[ii]) break;
+            }
+            if(matchFound) return i;
+        }
+    }
+    return std::string::npos;
+}
+

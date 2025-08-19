@@ -36,7 +36,7 @@
 //     namespace fs = std::filesystem;
 // #endif //__cplusplus < 201703L
 #include <filesystem>
-namespace fs = std::filesystem;
+// namespace fs = std::filesystem;
 
 
 #ifndef _max
@@ -60,6 +60,25 @@ namespace fs = std::filesystem;
 
 
 namespace Useful {
+
+    /**
+     * @brief Retrieves the current system time as a formatted string.
+     *
+     * This function obtains the current time from the system clock and returns it
+     * as a human-readable string in the format produced by `ctime`, excluding the trailing newline.
+     *
+     * @return std::string The current time as a formatted string (e.g., "Wed Jun 12 15:23:45 2024").
+     */
+    inline std::string getCurrentTime() {
+
+        std::chrono::system_clock::time_point __CURRENT__TIME_POINT   = std::chrono::system_clock::now();
+        time_t __CURRENT__TIME_T       = std::chrono::system_clock::to_time_t(__CURRENT__TIME_POINT);
+        std::string _tempStr = ctime(&__CURRENT__TIME_T);
+        std::string __CURRENT__TIME_STRING  = _tempStr.substr(0, _tempStr.length()-1);
+        
+        return __CURRENT__TIME_STRING;
+    }
+
 
     struct HumanReadable {
         std::uintmax_t size{0};
@@ -103,6 +122,33 @@ namespace Useful {
         }
     };
 
+    
+    /***
+     * @brief Get size of terminal window
+     * @param width reference to integer variable for width
+     * @param height reference to integer variable for height
+     * @return `0`-successful; `-1`-error
+    */
+    inline int getTermSize(int &width, int &height) {
+#if _WIN32
+        CONSOLE_SCREEN_BUFFER_INFO csbi;
+        int columns, rows;
+        GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+        width   = csbi.srWindow.Right   - csbi.srWindow.Left    + 1;
+        height  = csbi.srWindow.Bottom  - csbi.srWindow.Top     + 1;
+#else
+        struct winsize winDim;
+        if(ioctl(STDOUT_FILENO,TIOCGWINSZ,&winDim)==-1) {
+            return -1;
+        }
+        width   = winDim.ws_col;
+        height  = winDim.ws_row;
+#endif
+        return 0;
+    }
+
+
+
     /**
      * @brief Retrieves the current terminal or console window size.
      *
@@ -141,7 +187,7 @@ namespace Useful {
      * @return Pos2d<int> An object containing the number of columns (x) and rows (y).
      * @throws std::runtime_error if retrieving the terminal size fails.
      */
-        inline Pos2d<int> getTerminalSize() {
+    inline Pos2d<int> getTerminalSize() {
         int columns = 0, rows = 0;
         int retCode = 0;
         if((retCode = getTerminalSize(columns, rows))!=0) {
@@ -291,6 +337,43 @@ namespace Useful {
         return findIdx<varType>(toCheck, toFind);
     }
 
+    
+    /// @brief replace every `{toReplace}` std::string in `{text}` with `{replaceTo}`
+    /// @param text std::string to replace parts of
+    /// @param toReplace old std::string that is to be removed/replaced
+    /// @param replaceTo new std::string that will be inserted
+    /// @return original `{text}` std::string but with `{toReplace}` replaced
+    inline std::string replaceSubstr(std::string text, std::string toReplace, std::string replaceTo) {
+        size_t count=0;
+        size_t pos = text.find(toReplace);
+        int replaceLen = toReplace.length();
+        
+        while(pos!=std::string::npos) {
+            text.replace(pos, replaceLen, replaceTo);
+            count+=pos;
+            pos = text.find(toReplace, pos+1);
+        }
+        return text;
+    }
+    inline void replaceSubstr(std::string* text, std::string toReplace, std::string replaceTo) {
+        size_t count=0;
+        size_t pos = text->find(toReplace);
+        int replaceLen = toReplace.length();
+        
+        while(pos!=std::string::npos) {
+            text->replace(pos, replaceLen, replaceTo);
+            count+=pos;
+            pos = text->find(toReplace, pos+1);
+        }
+    }
+
+    template<class T>
+    inline std::string FormatWithSymbol(T value, std::string formatSymbol=" ") {
+        std::stringstream ss;
+        ss.imbue(std::locale(""));
+        ss << std::fixed << value;
+        return replaceSubstr(ss.str(), ",", formatSymbol);
+    }
 
     template<class _castType>
     inline std::string formatNumber(
@@ -592,7 +675,7 @@ namespace Useful {
     
     inline void printDirEntries(std::string _path) {
         std::cout << "======== dir entries ========" << std::endl;
-        for(const auto& entry : fs::directory_iterator(_path)) {
+        for(const auto& entry : std::filesystem::directory_iterator(_path)) {
             std::cout << formatNumber(entry.path(), 100, 1, "left") << " | ";
             std::cout << " size:" << formatNumber(HumanReadable{entry.file_size()}, 10, 1) << " ("<<formatNumber(HumanReadable{entry.file_size()}.size,10)<<")";
             std::cout << std::endl;
@@ -600,6 +683,617 @@ namespace Useful {
         std::cout << "=============================" << std::endl;
     }
 
+
+    /**
+     * @brief Finds the index of the shortest or longest string in a vector of strings.
+     *
+     * This function searches through the provided vector of strings and returns the index
+     * of either the shortest or longest string, depending on the value of the `id` parameter.
+     *
+     * @param stringVec The vector of strings to search.
+     * @param id Selection mode: 
+     *           - 0 to find the index of the shortest string.
+     *           - 1 to find the index of the longest string.
+     * @return The index of the selected string in the vector, or -1 if an invalid `id` is provided.
+     *
+     * @note If `id` is not 0 or 1, an error message is printed and -1 is returned.
+     */
+    inline int stringOfVector(std::vector<std::string> stringVec, int id) {
+        int idx;
+        std::vector<std::string>::iterator leWord;
+
+        if(id == 0) {
+            leWord = min_element(
+                stringVec.begin(), stringVec.end(),
+                [](const auto& a, const auto& b) {
+                    return a.size() < b.size();
+                });
+        }
+        else if(id == 1) {
+            leWord = max_element(
+                stringVec.begin(), stringVec.end(),
+                [](const auto& a, const auto& b) {
+                    return a.size() < b.size();
+                });
+        }
+        else {
+            std::cout << "ERROR: stringOfVector: wrong id selected. Exiting.." << std::endl;
+            return -1;
+        }
+        // resultStrRef = *leWord;
+        return distance(stringVec.begin(), leWord);
+    }
+    /**
+     * @brief Splits a string into float values based on a delimiter.
+     *
+     * Parses the input string `line` using the specified `delimiter`, converts each substring
+     * to a float, and stores the results in the provided `returnArr` array. The number of expected
+     * float values is specified by `numVar`. Optionally, prints debug information if `printVar` is true.
+     *
+     * @param line The input string to split and parse.
+     * @param delimiter The delimiter used to split the string.
+     * @param returnArr Array to store the parsed float values.
+     * @param numVar Number of expected float values (default is 4).
+     * @param printVar If true, prints debug information (default is false).
+     */
+    inline void splitString(
+        std::string line,
+        std::string delimiter,
+        float returnArr[],
+        int numVar=4,
+        bool printVar=false
+    ) {
+        if(printVar) std::cout << "--- \"" << line << "\"\n";
+        size_t pos = 0;
+        for(int i=0; i<numVar; i++) {
+            if(i<(numVar-1)) pos = line.find(delimiter);
+            if(printVar) std::cout << "- pos:" << pos << " :" << line.substr(0, pos) << "\n";
+            returnArr[i] = stof(line.substr(0, pos));
+            line.erase(0, pos + delimiter.length());
+        }
+        if(printVar) std::cout << "---";
+    }
+
+    /**
+     * @brief Splits a string into a vector of substrings based on a specified delimiter.
+     *
+     * This function takes an input string and splits it into substrings wherever the delimiter occurs.
+     * Optionally, it can print debug information and throw an error if the delimiter is not found.
+     *
+     * @param line The input string to be split.
+     * @param delimiter The delimiter string used to split the input.
+     * @param printVar If true, prints debug information about the splitting process. Default is false.
+     * @param causeError If true, throws a runtime error if the delimiter is not found in the input string. Default is false.
+     * @return std::vector<std::string> A vector containing the split substrings.
+     * @throws std::runtime_error If causeError is true and the delimiter is not found in the input string.
+     */
+    inline std::vector<std::string> splitString(
+        std::string line,
+        std::string delimiter,
+        bool printVar   = false,
+        bool causeError = false
+    ) {
+        if(printVar) std::cout << "--- \"" << line << "\"\n";
+        /// `std::vector<std::string>` of the strings containing the results
+        std::vector<std::string> resultStrings;
+        size_t idx0 = 0;
+        size_t idx1 = line.find(delimiter, idx0);
+
+        if(idx1==std::string::npos) {
+            resultStrings.push_back(line);
+            if(causeError) throw std::runtime_error("std::vector<std::string> splitString(std::string, std::string, bool, bool) delimiter doesn't exist in `line`");
+            if(printVar) std::cout << "error: splitString: no delimiter \"" << delimiter << "\" found. Returning empty vector\n";
+            return resultStrings;
+        }
+
+        while(true) {
+            resultStrings.push_back(line.substr(idx0, idx1-idx0));
+            if(idx1==std::string::npos) break;
+            for(;line.substr(idx1+delimiter.length(), delimiter.length())==delimiter; idx1+=delimiter.length());
+            idx0 = idx1+delimiter.length();
+            if(idx0==line.length()) break;
+            idx1 = line.find(delimiter, idx0);
+        }
+
+        if(printVar) std::cout << "---";
+        return resultStrings;
+    }
+    /**
+     * @brief Splits a string into substrings based on a specified delimiter.
+     *
+     * This function clears the provided vector and fills it with substrings
+     * obtained by splitting the input string using the given delimiter.
+     * Optionally, it can print the variable contents if requested.
+     *
+     * @param line The input string to be split.
+     * @param delimiter The delimiter string used to split the input.
+     * @param returnVec Reference to a vector where the resulting substrings will be stored.
+     * @param printVar If true, prints the variable contents (default: false).
+     */
+    inline void splitString(
+        std::string line,
+        std::string delimiter,
+        std::vector<std::string> &returnVec,
+        bool printVar=false
+    ) {
+        returnVec.clear();
+        returnVec = splitString(line,delimiter,printVar);
+    }
+    /**
+     * @brief Splits a string into substrings based on a specified delimiter and stores the result in a provided vector pointer.
+     *
+     * This function clears the contents of the vector pointed to by `returnPtr`, then splits the input `line` using the given
+     * `delimiter`, and stores the resulting substrings in the vector. Optionally, it can print the variable if `printVar` is set to true.
+     *
+     * @param line The input string to be split.
+     * @param delimiter The delimiter string used to split the input.
+     * @param returnPtr Pointer to a vector where the resulting substrings will be stored.
+     * @param printVar If true, prints the variable (default is false).
+     */
+    inline void splitString(
+        std::string line,
+        std::string delimiter,
+        std::vector<std::string> *returnPtr,
+        bool printVar=false
+    ) {
+        returnPtr->clear();
+        (*returnPtr) = splitString(line,delimiter,printVar);
+    }
+
+    
+    inline void clearScreen(int pos_X=0, int pos_Y=0) {
+        std::string ansiCode = "\x1B[";
+
+        std::cout<<ansiCode<<"2J";
+        std::cout<<ansiCode<<pos_Y<<";"<<pos_X<<"H";
+        std::cout.flush();
+    }
+
+    /**
+     * @brief Prints text to the console at a specified position using ANSI escape codes.
+     *
+     * This function moves the cursor to the given (posX, posY) position and prints the provided text.
+     * Supports both absolute and relative positioning, optional screen clearing, and handles multi-line text.
+     *
+     * @param posX        The X (column) position to print the text. Interpreted as absolute or relative based on x_method.
+     * @param posY        The Y (row) position to print the text. Interpreted as absolute or relative based on y_method.
+     * @param printText   The text to print. Supports multi-line text separated by '\n'.
+     * @param flushEnd    If true, flushes the output stream after printing. Default is true.
+     * @param x_method    Positioning method for X: "abs" for absolute, "rel" for relative to previous position. Default is "abs".
+     * @param y_method    Positioning method for Y: "abs" for absolute, "rel" for relative to previous position. Default is "abs".
+     * @param initClearScr If true, clears the screen before printing. Default is false.
+     */
+    inline void ANSI_mvprint(
+        int posX,
+        int posY,
+        std::string printText,
+        bool flushEnd = true,
+        std::string x_method = "abs",
+        std::string y_method = "abs",
+        bool initClearScr = false
+    ) {
+        static int prevPos[2] = {0, 0};
+
+        if(x_method=="rel") posX = prevPos[0]+posX;
+        if(y_method=="rel") posY = prevPos[1]+posY;
+
+        std::string ansiCode = "\x1B[";
+
+        if(initClearScr) {
+            std::cout<<ansiCode<<"2J";
+            std::cout.flush();
+        }
+
+        size_t tPos=0, ePos=0;
+        int rowCount= 0;
+        int rowLen  = 0;
+        std::string _substring = "";
+        while(printText.find('\n', tPos)!=std::string::npos) {
+            ePos = printText.find('\n', tPos);
+            _substring = printText.substr(tPos, ePos-tPos);
+            std::cout<<ansiCode<<posY+rowCount<<";"<<posX<<"H"<<_substring;
+            tPos = ePos+1;
+            rowCount++;
+        }
+        _substring = printText.substr(tPos, printText.length());
+        std::cout<<ansiCode<<posY+rowCount<<";"<<posX<<"H"<<_substring;
+        rowCount++;
+
+        // std::cout<<ansiCode<<posY<<";"<<posX<<"H"<<printText;
+        if(flushEnd) std::cout.flush();
+        prevPos[0] = posX + _substring.length();
+        prevPos[1] = posY + rowCount;
+    }
+
+    /**
+     *
+     * @brief Prints a vector of strings to the terminal at a specified position using ANSI escape codes.
+     * This function prints each string in `textVec` at consecutive lines starting from the position (`posX`, `posY`)
+     * in the terminal. It uses ANSI escape codes to position the cursor and optionally clear the screen.
+     * The function also handles terminal resizing by clearing the screen if the terminal dimensions change.
+     *
+     * @param textVec Vector of strings to print.
+     * @param posX Horizontal position (column) to start printing.
+     * @param posY Vertical position (row) to start printing.
+     * @param flushEnd If true, flushes the output stream after printing. Default is true.
+     * @param clearScr If true, clears the screen before printing. Default is false.
+     * @param end String to print at the end (e.g., newline). Default is "\n".
+     * @param initClear If true, clears the screen on the first call. Default is true.
+     */
+    inline void baseAnsiPrint(
+        std::vector<std::string> textVec,
+        int posX,
+        int posY,
+        bool flushEnd = true,
+        bool clearScr = false,
+        std::string end = "\n",
+        bool initClear = true
+    ) {
+        int terminalDim[2];
+        static int oldTermDim[2];
+        static bool funcInit = false;
+        std::string ansiCode = "\x1B[";
+
+        getTermSize(terminalDim[0], terminalDim[1]);
+
+        if(!funcInit) {
+            oldTermDim[0] = terminalDim[0];
+            oldTermDim[1] = terminalDim[1];
+            if(initClear) {
+                std::cout << ansiCode+"2J";
+                funcInit = true;
+            }
+        }
+        if(terminalDim[0]!=oldTermDim[0] || terminalDim[1]!=oldTermDim[1]) {
+            std::cout << ansiCode+"2J";
+            oldTermDim[0] = terminalDim[0];
+            oldTermDim[1] = terminalDim[1];
+        }
+
+        if(clearScr) std::cout << ansiCode+"2J";
+        for(int i=0; i<static_cast<int>(textVec.size()); i++) {
+            std::cout << ansiCode+std::to_string(posY+i)+";"+std::to_string(posX)+"H"+textVec[i];
+        }
+        std::cout << end;
+        if(flushEnd) std::cout.flush();
+    }
+
+
+    /**
+     * @brief Prints text to the terminal using ANSI escape codes for positioning and formatting.
+     *
+     * This function allows printing a string to a specified position in the terminal,
+     * optionally clearing the screen before printing, and flushing the output at the end.
+     * The text can be split into lines using a specified delimiter.
+     *
+     * @param text The text to print.
+     * @param posX The column position to start printing (default is 0).
+     * @param posY The row position to start printing (default is 0).
+     * @param flushEnd If true, flushes the output stream after printing (default is true).
+     * @param clearScr If true, clears the terminal screen before printing (default is false).
+     * @param textDelim The delimiter used to split the text into lines (default is "\n").
+     * @param end The string to print at the end (default is "\n").
+     */
+    inline void ansiPrint(
+        std::string text,
+        int posX = 0,
+        int posY = 0,
+        bool flushEnd = true,
+        bool clearScr = false,
+        std::string textDelim = "\n",
+        std::string end = "\n"
+    ) {
+        int printPos[2] = {0, 0};
+        int maxRowLen = 0;
+
+        /// @brief vector to hold each line of `text`
+        std::vector<std::string> lines = splitString(text,textDelim,false);
+        
+        baseAnsiPrint(lines,posX,posY,flushEnd,clearScr,end);
+    }
+
+    /**
+     * @brief Prints text to the terminal at a scaled position using ANSI escape codes.
+     *
+     * This function splits the input text into lines, calculates the position to print
+     * based on the terminal size and scaling factors, and then prints the text at the
+     * calculated position. It supports optional screen clearing, custom line delimiters,
+     * and flushing behavior.
+     *
+     * @param text The text to print.
+     * @param scalX Horizontal scaling factor (0.0 to 1.0) for print position relative to terminal width.
+     * @param scalY Vertical scaling factor (0.0 to 1.0) for print position relative to terminal height.
+     * @param flushEnd If true, flushes the output stream after printing.
+     * @param clearScr If true, clears the screen before printing.
+     * @param textDelim Delimiter used to split the text into lines (default: "\n").
+     * @param end String appended at the end of the printed text (default: "\n").
+     * @param initClear If true, performs initial screen clear before printing.
+     */
+    inline void ansiPrint(
+        std::string text,
+        float scalX = 0,
+        float scalY = 0,
+        bool flushEnd = true,
+        bool clearScr = false,
+        std::string textDelim = "\n",
+        std::string end = "\n",
+        bool initClear = true
+    ) {
+        
+        int terminalDim[2] = {0, 0};
+        int printPos[2] = {0, 0};
+        int textDim[2] = {0, 0};
+
+        /// @brief vector to hold each line of `text`
+        std::vector<std::string> lines = splitString(text,textDelim,false);
+        getTermSize(terminalDim[0], terminalDim[1]);
+        textDim[0] = lines[stringOfVector(lines,1)].length();
+        textDim[1] = static_cast<int>(lines.size());
+        printPos[0] = static_cast<int>(round(static_cast<float>(terminalDim[0])*scalX));
+        printPos[1] = static_cast<int>(round(static_cast<float>(terminalDim[1])*scalY));
+        if(printPos[0]+textDim[0]>terminalDim[0]) printPos[0]+=(terminalDim[0]-(printPos[0]+textDim[0]));
+        if(printPos[1]+textDim[1]>terminalDim[1]) printPos[1]+=(terminalDim[1]-(printPos[1]+textDim[1]));
+        
+        baseAnsiPrint(lines,printPos[0],printPos[1],flushEnd,clearScr,end,initClear);
+    }
+
+    /**
+     * @brief ANSI print with side alignment
+     * @param text text/paragraph to print on terminal
+     * @param xAlign x-axis side alignment:
+     * options: {`"left"`, `"right"`}
+     * @param yAlign y-axis side alignment:
+     * options: {`"top"`, `"bottom"`}
+     * @param flushEnd whether to flush `std::cout` after printing
+     * @param clearScr whether to clear screen before printing to terminal
+     * @param textDelim delimiter std::string to indicate where to split `text` into separate lines/rows
+     * @param end std::string to print at the end
+    */
+    inline void ansiPrint(
+        std::string text,
+        std::string xAlign,
+        std::string yAlign,
+        bool flushEnd = true,
+        bool clearScr = false,
+        std::string textDelim = "\n",
+        std::string end = "\n"
+    ) {
+        float axisScal[2] = {0, 0};
+        if(xAlign=="left") axisScal[0] = 0;
+        else if(xAlign=="right") axisScal[0] = 1;
+        else {
+            std::cout << "ERROR: ansiPrint(): wrong xAlign parameter input. Exiting.."<<std::endl;
+            return;
+        }
+        if(yAlign=="top") axisScal[1] = 0;
+        else if(yAlign=="bottom") axisScal[1] = 1;
+        else {
+            std::cout << "ERROR: ansiPrint(): wrong yAlign parameter input. Exiting.."<<std::endl;
+            return;
+        }
+        ansiPrint(text,axisScal[0],axisScal[1],flushEnd,clearScr,textDelim, end);
+    }
+
+
+    /**
+     * @brief Prints a formatted value to the standard output with customizable options.
+     *
+     * This function formats the given value according to the specified width, precision,
+     * alignment, and other options, then prints it to the console. It can handle cases
+     * where the formatted string exceeds the specified width by either truncating,
+     * splitting, or leaving it as is, based on the method_widthOver parameter.
+     *
+     * @tparam _castType The type of the value to print.
+     * @param value The value to be printed.
+     * @param width The minimum width of the output (default: std::string::npos for no limit).
+     * @param align Alignment of the output ("right" or "left", default: "right").
+     * @param end The string to append at the end of each line (default: "\n").
+     * @param flushEnd If true, flushes the output stream after printing (default: true).
+     * @param flushBeginning If true, flushes the output stream before printing (default: false).
+     * @param numberFill If true, fills the output with zeros (default: false).
+     * @param precision The number of decimal places for floating-point values (default: 1).
+     * @param method_widthOver Determines behavior when output exceeds width:
+     *        0 - Do nothing,
+     *        1 - Truncate,
+     *        2 - Split into multiple lines (default: 0).
+     * @return int Returns 0 on success, 1 on invalid method_widthOver value.
+     */
+    template<typename _castType>
+    inline int PrintOut(
+        _castType   value,
+        size_t      width           = std::string::npos,
+        std::string align           = "left",
+        std::string end             = "\n",
+        bool        flushEnd        = true,
+        bool        flushBeginning  = false,
+        bool        numberFill      = false,
+        int         precision       = 1,
+        size_t      method_widthOver= 1
+    ) {
+        std::string initString = "[" + getCurrentTime()+"]: ";
+        std::vector<std::string> formattedString;
+        std::string rawString = formatNumber(value, (width==std::string::npos? 0 : width-initString.size()), precision, align, numberFill);
+
+        if((rawString.size()+initString.size()) > width) {
+            switch (method_widthOver) {
+                case 0: //Do nothing
+                    formattedString.push_back(rawString);
+                    break;
+                case 1: //Cut and delete the extra
+                    formattedString.push_back(rawString.substr(0, width));
+                    break;
+                case 2: //Cut and move the extra to new elements
+                    do {
+                        formattedString.push_back(rawString.substr(0, width));
+                        rawString.erase(0, width);
+                    } while (rawString.size()>width);
+                    break;
+                default:
+                    return 1;
+                    break;
+            }
+        }
+        else {
+            formattedString.push_back(rawString);
+        }
+        
+
+        if(flushBeginning) std::cout.flush();
+        for(size_t i=0; i<formattedString.size(); i++) {
+            switch (i) {
+                case 0:
+                    std::cout << initString;
+                    break;
+                default:
+                    std::cout << std::string(initString.size(), ' ');
+                    break;
+            }
+            std::cout << formattedString.at(i);
+            std::cout << end;
+        }
+        if(flushEnd) std::cout.flush();
+        return 0;
+    }
+
+
+    /**
+     * @brief Converts a tm date structure to a formatted string.
+     *
+     * The resulting string is in the format "DD-MM-YYYY", where:
+     * - DD is the day of the month (2 digits, zero-padded if necessary)
+     * - MM is the month (2 digits, zero-padded if necessary; note: tm_mon is zero-based)
+     * - YYYY is the year (4 digits, zero-padded if necessary; note: tm_year is years since 1900)
+     *
+     * @param _date The tm structure representing the date.
+     * @return std::string The formatted date string.
+     */
+    inline std::string dateToStr(tm _date) {
+        return (
+            formatNumber(_date.tm_mday, 2, 0, "right", true) + "-" +
+            formatNumber(_date.tm_mon , 2, 0, "right", true) + "-" +
+            formatNumber(_date.tm_year, 4, 0, "right", true)
+        );
+    } 
+
+
+    
+    /// @brief create a progress bar on terminal
+    /// @param progress current progress made
+    /// @param total_val total progress which reesembles 100&
+    /// @param printBar whether to print the progress bar
+    /// @param progFin whether the progress is finished (used to get total duration)
+    /// @param interval the time interval between each progressBar update
+    /// @param symbolIndex what symbol to use {"■", "⬛", "▉", "▉", "█"}
+    /// @return std::string of the progressbar
+    inline std::string progressBar(
+        float progress,
+        float total_val,
+        bool printBar   = true,
+        bool progFin    = false,
+        float interval  = 0.1,
+        int symbolIndex = 3
+    ) {
+        static int symbIdx = 2;
+        symbIdx = symbolIndex;
+        static std::vector<std::string> symb{"■", "⬛", "▉", "▉", "█", "O"};
+        static char intr[] = {'|', '/', '-', '\\'};
+        static int prev_intrCount = 0;
+        static bool func_initd = false;
+        static bool func_ended = true;
+        static int total_progLen;
+        static float speed, percent = 0;
+
+        static float prev_progress = 0;
+        static auto prevTime = std::chrono::steady_clock::now();
+        static auto start_time = std::chrono::system_clock::now();
+        static auto abs_startTime = std::chrono::system_clock::now();
+        static float progressDiff = 0;
+
+        static float filterVal = 0.1;
+
+        static int total_val_sanityCheck = 0;
+
+        std::stringstream fullString;
+        static std::string prev_fullString = "";
+
+        if(!func_initd) total_val_sanityCheck = int(total_val);
+
+        percent = progress/total_val*100;
+
+        auto currTime = std::chrono::steady_clock::now();
+        auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(currTime-prevTime);
+        if(!progFin && float(elapsed.count()/float(1'000'000)) < interval) return prev_fullString;
+
+        speed = filterVal*(progress-prev_progress)/(elapsed.count()/float(1'000'000)) + (1.0-filterVal)*speed;
+        progressDiff = float(0.5)*(progress-prev_progress)+float(0.5)*progressDiff;
+        prevTime = currTime;
+        prev_progress = progress;
+
+        if(!func_initd) {
+            abs_startTime = std::chrono::system_clock::now();
+            time_t tStart_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+            char* startTime_text = ctime(&tStart_time);
+            if (startTime_text[strlen(startTime_text)-1] == '\n') startTime_text[strlen(startTime_text)-1] = '\0';
+            fullString << "Start time: [" << startTime_text << "]" << "\n\n";
+            total_progLen = FormatWithSymbol(int(total_val), "'").length();
+            func_initd = true;
+        }
+        if(int(total_val) != total_val_sanityCheck) {
+            func_initd = false;
+        }
+
+
+        std::string prog_formatted = FormatWithSymbol(int(progress), "'");
+        std::string emptSpac(total_progLen-prog_formatted.length(), ' ');
+        std::string totalStr = " progress: "+emptSpac+prog_formatted+": ";
+
+        std::string percent_formatted = formatNumber(percent,2);
+        std::string emptSpac2(6-percent_formatted.length(), ' ');
+        totalStr += emptSpac2+percent_formatted+"% ";
+
+        std::string progBars="";
+        for(int i=0; i<=int(floor(percent)); i++) {
+            progBars+=symb[symbIdx];
+        }
+
+        std::string progressStr;
+        if(int(floor(percent))<100) progressStr = progBars+intr[prev_intrCount];
+        else progressStr = progBars;
+        prev_intrCount+=1;
+        if(prev_intrCount>=4) prev_intrCount=0;
+
+        std::string emptSpac3(100-int(floor(percent)), ' ');
+        totalStr += "|"+progressStr+emptSpac3+"|: ";
+
+        std::string speed_formatted = formatNumber(speed, 1);
+        std::string emptSpac4(6-speed_formatted.length(), ' ');
+        totalStr += emptSpac4+speed_formatted+"pt/s ";
+
+        fullString << totalStr.c_str();
+        // if(printBar) printf(" %s\r", totalStr.c_str());
+
+        if(progFin) {
+            auto tEnd_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+            char* endTime_text = ctime(&tEnd_time);
+
+            if (endTime_text[strlen(endTime_text)-1] == '\n') endTime_text[strlen(endTime_text)-1] = '\0';
+            fullString << "\n\nEnd time  : [" << endTime_text << "]\n";
+
+            std::chrono::duration<double> elapsedTime = std::chrono::system_clock::now()-abs_startTime;
+
+            const auto hrs = std::chrono::duration_cast<std::chrono::hours>(elapsedTime);
+            const auto mins = std::chrono::duration_cast<std::chrono::minutes>(elapsedTime - hrs);
+            const auto secs = std::chrono::duration_cast<std::chrono::seconds>(elapsedTime - hrs - mins);
+            const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(elapsedTime - hrs - mins - secs);
+            fullString << "System inactive for [" << hrs.count() <<
+            ":" << mins.count() <<
+            ":" << secs.count() <<
+            "." << ms.count() << "]"<< "\n";
+            // std::cout << "elapsed time: [" << elapsedTime.count() << "s]\n";
+        }
+        
+        return fullString.str();
+    }
 
 }
 

@@ -6,6 +6,9 @@
 #include <iostream>
 #include <iomanip>
 
+#include <utf8.h>
+#include <fmt/core.h>
+
 #include <vector>
 
 #include <string>
@@ -16,6 +19,8 @@
 
 #include <chrono>
 #include <thread>
+
+#include <useful.hpp>
 
 
 #include <gtfs-realtime.pb.h>
