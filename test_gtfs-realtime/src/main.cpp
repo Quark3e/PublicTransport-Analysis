@@ -248,7 +248,6 @@ TrpUpd ParseDebugString(std::string _strToParse) {
         });
         auto& stu_ref = _result.stop_time_updates.back();
 
-        bool tempBreak = false;
         do {
             int _id = std::stoi(_strToParse.substr(_refIdx+1, 6));
             
@@ -257,11 +256,6 @@ TrpUpd ParseDebugString(std::string _strToParse) {
             case 1: // stop_sequence [uint32]
                 _colonPos = _strToParse.find(':', _refIdx);
                 _isol = _strToParse.substr(_colonPos+2, _strToParse.find('\"', _colonPos+2)-_colonPos-2);
-                // std::cout << "stop_sequence: " << static_cast<uint32_t>(std::stoul(_isol)) << "\n";
-                // std::cout << _isol << "\n\n";
-
-                // // tempBreak = true;
-                // exit(0);
 
                 stu_ref.stop_sequence = static_cast<uint32_t>(std::stoul(_isol));
                 _refIdx = _strToParse.find('\n', _colonPos);
@@ -311,21 +305,10 @@ TrpUpd ParseDebugString(std::string _strToParse) {
             default:
                 break;
             }
-            // _refIdx = _strToParse.find('\n', _colonPos); //set _refIdx to index to the newline of same line as found colon
 
-            if(tempBreak) break;
         } while (_strToParse.at(_refIdx+3)!='}'); //while the char at next line's 3rd index isn't the closing braces for TripDescriptor
         
         /// end parsing of an instance of stop_time_update
-
-        // std::cout << _result.timestamp << std::endl;
-        // std::cout << _result.stop_time_updates.at(0).stop_sequence << std::endl;
-        // std::cout << "arrival: delay: "<<_result.stop_time_updates.at(0).arrival.delay << std::endl;
-        // std::cout << "arrival: time : "<<_result.stop_time_updates.at(0).arrival.time << std::endl;
-        // std::cout << "departure: delay: "<<_result.stop_time_updates.at(0).departure.delay << std::endl;
-        // std::cout << "departure: time : "<<_result.stop_time_updates.at(0).departure.time << std::endl;
-        // std::cout << "\""<<_result.stop_time_updates.at(0).stop_id << "\"" << std::endl;
-        // std::cout << _result.stop_time_updates.at(0).schedule_relationship << "\n" << std::endl;
 
         _refIdx = _strToParse.find('\n', _refIdx+1); //set _refIdx to index to the newline char for the closing braces for the stop_time_update '  }\n'
         if(_refIdx==std::string::npos) return _result;
