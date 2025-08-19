@@ -24,8 +24,11 @@ struct STU {
 };
 struct TrpDsc {
     std::string trip_id;    // [1]
+    std::string start_time; // [2]
     std::string start_date; // [3]
     int32_t schedule_relationship;  // [4]
+    std::string route_id; // [5]
+    uint32_t direction_id; // [6]
 };
 struct Vhcl {
     std::string id;
@@ -39,7 +42,7 @@ struct TrpUpd {
 
 TrpUpd ParseDebugString(std::string _strToParse);
 
-size_t findSubstr(std::string _toFind, std::string _toSearch);
+
 
 int main(int argc, char** argv) {
     std::cout << "Program start:----------\n" << std::endl;
@@ -127,8 +130,11 @@ int main(int argc, char** argv) {
         file_parsedData << "    \"timestamp\" : " << dat.timestamp << ",\n";
         file_parsedData << "    \"trip\" : {\n";
         file_parsedData << "        \"trip_id\" : \"" << dat.trip.trip_id << "\",\n";
+        file_parsedData << "        \"start_time\" : \"" << dat.trip.start_time << "\",\n";
         file_parsedData << "        \"start_date\" : \"" << dat.trip.start_date << "\",\n";
-        file_parsedData << "        \"scheduled_relationship\" : \"" << TrpDsc_schedule_relationship.at(dat.trip.schedule_relationship) << "\"\n";
+        file_parsedData << "        \"scheduled_relationship\" : \"" << TrpDsc_schedule_relationship.at(dat.trip.schedule_relationship) << "\",\n";
+        file_parsedData << "        \"route_id\" : \"" << dat.trip.route_id << "\",\n";
+        file_parsedData << "        \"direction_id\" : " << dat.trip.direction_id << "\n";
         file_parsedData << "    },\n";
         file_parsedData << "    \"stop_time_updates\" : [";
         for(size_t ii=0; ii<dat.stop_time_updates.size(); ii++) {
@@ -174,7 +180,7 @@ TrpUpd ParseDebugString(std::string _strToParse) {
     if(_strToParse.size()==0) throw std::runtime_error("Empty string");
     if(_strToParse.substr(0, 11) != "departure {") throw std::runtime_error("String doesn't contain initial signature substr \"departure {\"");
 
-    TrpUpd _result{0, {"", "", 0}, std::vector<STU>{}, {""}};
+    TrpUpd _result{0, {"", "", "", 0, "", 0}, std::vector<STU>{}, {""}};
     std::string _isol = "";
     size_t _colonPos = 0;
     size_t _refIdx = 0;
@@ -197,13 +203,25 @@ TrpUpd ParseDebugString(std::string _strToParse) {
             _isol = _strToParse.substr(_colonPos+3, _strToParse.find('\"', _colonPos+3)-_colonPos-3);
             _result.trip.trip_id = _isol;
             break;
+        case 2: // start_time [string]
+            _isol = _strToParse.substr(_colonPos+3, _strToParse.find('\"', _colonPos+3)-_colonPos-3);
+            _result.trip.trip_id = _isol;
+            break;
         case 3: // start_date [string]
             _isol = _strToParse.substr(_colonPos+3, _strToParse.find('\"', _colonPos+3)-_colonPos-3);
             _result.trip.start_date = _isol;
             break;
         case 4: // schedule_relationship [int32]
             _isol = _strToParse.substr(_colonPos+2, _strToParse.find('\n', _colonPos));
-            _result.trip.schedule_relationship = std::stoi(_isol);
+            _result.trip.schedule_relationship = static_cast<int32_t>(std::stoi(_isol));
+            break;
+        case 5: // route_id [string]
+            _isol = _strToParse.substr(_colonPos+3, _strToParse.find('\"', _colonPos+3)-_colonPos-3);
+            _result.trip.route_id = _isol;
+            break;
+        case 6: // direction_id [uint32]
+            _isol = _strToParse.substr(_colonPos+2, _strToParse.find('\n', _colonPos));
+            _result.trip.direction_id = static_cast<uint32_t>(std::stoul(_isol));
             break;
         default:
             break;
@@ -323,27 +341,3 @@ TrpUpd ParseDebugString(std::string _strToParse) {
 
     return _result;
 }
-
-
-size_t findSubstr(std::string _toFind, std::string _toSearch) {
-    if(_toFind.size()==0) throw std::runtime_error("findSubstr(std::string, std::string) argument for the string to find cannot be empty.");
-    else if(_toSearch.size()==0) throw std::runtime_error("findSubstr(std::string, std::string) argument for the string to search cannot be empty.");
-    
-    if(_toFind.size() > _toSearch.size()) throw std::runtime_error("findSubstr(std::string, std::string): invalid arguments.");
-    else if(_toFind.size() == _toSearch.size()) {
-        if(_toFind==_toSearch) return 0;
-        else return std::string::npos;
-    }
-    
-    bool matchFound = false;
-    for(size_t i=0; i<_toSearch.size()-_toFind.size(); i++) {
-        if(_toSearch[i]==_toFind[0]) {
-            for(size_t ii=0; ii<_toFind.size(); ii++) {
-                if(_toSearch[i+ii]!=_toFind[ii]) break;
-            }
-            if(matchFound) return i;
-        }
-    }
-    return std::string::npos;
-}
-
