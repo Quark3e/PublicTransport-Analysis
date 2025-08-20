@@ -31,6 +31,7 @@ endif()
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/include")
 target_include_directories(${PROJECT_NAME} PRIVATE ${DIR_PROTO_GTFS_REALTIME})
 target_include_directories(${PROJECT_NAME} PRIVATE "${DIR_REPO_LIBS}/Pos2d/include")
+target_include_directories(${PROJECT_NAME} PRIVATE "${DIR_REPO_LIBS}/GTFS-RT__TripUpdate_DebugString_parser/include")
 
 target_link_libraries(${PROJECT_NAME} PRIVATE utf8::cpp utf8cpp::utf8cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)

@@ -1,3 +1,5 @@
 **/build
 **/api_keys
 **/dataset
+
+.vscode/**

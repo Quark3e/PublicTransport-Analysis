@@ -95,6 +95,7 @@
         "xutility": "cpp"
     },
     "editor.foldingStrategy": "auto",
+    "editor.largeFileOptimizations": false,
     "python.languageServer": "Pylance",
     "cSpell.words": [
         "GTFS"

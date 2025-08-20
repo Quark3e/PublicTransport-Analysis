@@ -15,10 +15,13 @@ void func_depthSearch(std::string _dirPath, std::list<std::string> *_storeResult
     }
 };
 
-struct stopTimeEvent {
-    int32_t delay;
-    int64_t time;
-    int32_t uncertainty;
+
+struct STU_refd : public STU {
+    std::string trip_id;
+    uint32_t STU_idx;
+
+    STU_refd(STU _stu, std::string _trip_id, uint32_t _stu_idx): STU{_stu}, trip_id{_trip_id}, STU_idx{_stu_idx} {}
+
 };
 
 int main(int argc, char** argv) {
@@ -71,9 +74,8 @@ int main(int argc, char** argv) {
     int entryPathOpenFailures = 0;
     auto entry_itr = filesToSearch.begin();
     
-    std::vector<stopTimeEvent> storedData;
-    
-    std::string::npos
+    std::vector<TrpUpd> storedData;
+    std::vector<STU_refd> storedData_tripDelays_idx;
 
     Useful::ANSI_mvprint(0, 8, "", true);
     for(size_t i=0; i<filesToSearch.size(); i++) {
@@ -87,13 +89,13 @@ int main(int argc, char** argv) {
 
         Useful::ANSI_mvprint(0, 9, std::string("S.T.U. size:")+Useful::formatNumber(trpUpdate.stop_time_update_size()));
         for(size_t i_upd=0; i_upd<trpUpdate.stop_time_update_size(); i_upd++) {
-            auto _departure = trpUpdate.stop_time_update(i_upd).departure();
-            if(_departure.delay() > 0) {
-                storedData.push_back(stopTimeEvent{
-                    _departure.delay(),
-                    _departure.time(),
-                    _departure.uncertainty()
-                });
+            storedData.push_back(ParseDebugString(trpUpdate.stop_time_update(i_upd).DebugString()));
+            auto tempTrp = storedData.back();
+            for(size_t i_stu=0; i_stu<tempTrp.stop_time_updates.size(); i_stu++) {
+                auto tempSTU = tempTrp.stop_time_updates.at(i_stu);
+                if(!(tempSTU.arrival.delay==0 && tempSTU.departure.delay)) {
+                    storedData_tripDelays_idx.push_back(STU_refd{tempSTU, tempTrp.trip.trip_id, static_cast<uint32_t>(i_stu)});
+                }
             }
             // Useful::ANSI_mvprint(0, 8, Useful::formatNumber(i_upd));
         }
@@ -114,9 +116,14 @@ int main(int argc, char** argv) {
     Useful::PrintOut("Num [failures] :"+std::to_string(entryPathOpenFailures));
     
     std::cout << std::endl;
-    Useful::PrintOut(std::string("Num departure delays found: ")+std::to_string(storedData.size()));
-    for(size_t i=0; i<storedData.size(); i++) {
-        std::cout << storedData.at(i).delay << " | " << storedData.at(i).time << " | " << storedData.at(i).uncertainty << std::endl;
+    Useful::PrintOut(std::string("Num delays found: ")+std::to_string(storedData_tripDelays_idx.size()));
+    system("pause");
+    for(size_t i=0; i<storedData_tripDelays_idx.size(); i++) {
+        auto refd = storedData_tripDelays_idx.at(i);
+        std::cout << " - [trip_id: \"" << refd.trip_id << "\" | STU_idx: " << Useful::formatNumber(refd.STU_idx, 3) << " | stop_sequence: " << Useful::formatNumber(refd.stop_sequence, 3) << " | stop_id: " << refd.stop_id << "] : delays: ";
+        if(refd.arrival.delay!=0)   std::cout << " arr.:" << Useful::formatNumber(refd.arrival.delay, 6) << "   ";
+        if(refd.departure.delay!=0) std::cout << " dep.:" << Useful::formatNumber(refd.departure.delay, 6);
+        std::cout << std::endl;
     }
     
     google::protobuf::ShutdownProtobufLibrary();
