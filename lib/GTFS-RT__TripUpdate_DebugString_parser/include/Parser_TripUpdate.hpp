@@ -68,7 +68,7 @@ inline TrpUpd ParseDebugString(std::string _strToParse) {
             break;
         case 2: // start_time [string]
             _isol = _strToParse.substr(_colonPos+3, _strToParse.find('\"', _colonPos+3)-_colonPos-3);
-            _result.trip.trip_id = _isol;
+            _result.trip.start_time = _isol;
             break;
         case 3: // start_date [string]
             _isol = _strToParse.substr(_colonPos+3, _strToParse.find('\"', _colonPos+3)-_colonPos-3);
