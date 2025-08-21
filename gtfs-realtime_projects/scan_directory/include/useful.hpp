@@ -148,6 +148,7 @@ namespace Useful {
     }
 
 
+    
 
     /**
      * @brief Retrieves the current terminal or console window size.
@@ -337,6 +338,31 @@ namespace Useful {
         return findIdx<varType>(toCheck, toFind);
     }
 
+
+    inline size_t findSubstr(std::string _toFind, std::string _toSearch) {
+        size_t size_toFind  = _toFind.size();
+        size_t size_toSearch= _toSearch.size();
+        if(size_toFind==0) throw std::runtime_error("findSubstr(std::string, std::string) arg for _toFind is empty, which is not allowed.");
+        else if(size_toSearch==0) throw std::runtime_error("findSubstr(std::string, std::string) arg for _toSearch is empty, which is not allowed.");
+        else if(size_toFind>size_toSearch) throw std::runtime_error("findSubstr(std::string, std::string) string length of _toFind is bigger than _toSearch which is not allowed.");
+        else if(size_toFind==size_toSearch) return (_toFind==_toSearch? 0 : std::string::npos);
+
+        size_t pos = 0;
+        bool matchFound = true;
+        for(size_t i=0; i<size_toSearch-size_toFind; i++) {
+            if(_toSearch.at(i)==_toFind.at(0)) {
+                matchFound = true;
+                for(size_t ii=0; ii<size_toFind; ii++) {
+                    if(_toFind.at(ii)!=_toSearch.at(i+ii)) {
+                        matchFound = false;
+                        break;
+                    }
+                }
+                if(matchFound) return i;
+            }
+        }
+        return std::string::npos;
+    }
     
     /// @brief replace every `{toReplace}` std::string in `{text}` with `{replaceTo}`
     /// @param text std::string to replace parts of
@@ -1198,10 +1224,10 @@ namespace Useful {
         static std::vector<std::string> symb{"■", "⬛", "▉", "▉", "█", "O"};
         static char intr[] = {'|', '/', '-', '\\'};
         static int prev_intrCount = 0;
-        static bool func_initd = false;
+        static bool func_initd = false; // whether the function progressBar has initialised.f
         static bool func_ended = true;
         static int total_progLen;
-        static float speed, percent = 0;
+        static double speed, percent = 0;
 
         static float prev_progress = 0;
         static auto prevTime = std::chrono::steady_clock::now();
@@ -1214,6 +1240,7 @@ namespace Useful {
         static int total_val_sanityCheck = 0;
 
         std::stringstream fullString;
+        static std::string init_string = "";
         static std::string prev_fullString = "";
 
         if(!func_initd) total_val_sanityCheck = int(total_val);
@@ -1224,21 +1251,26 @@ namespace Useful {
         auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(currTime-prevTime);
         if(!progFin && float(elapsed.count()/float(1'000'000)) < interval) return prev_fullString;
 
-        speed = filterVal*(progress-prev_progress)/(elapsed.count()/float(1'000'000)) + (1.0-filterVal)*speed;
+        speed = filterVal*(progress-prev_progress)/(elapsed.count()/double(1'000'000)) + (1.0-filterVal)*speed;
         progressDiff = float(0.5)*(progress-prev_progress)+float(0.5)*progressDiff;
         prevTime = currTime;
         prev_progress = progress;
 
         if(!func_initd) {
             abs_startTime = std::chrono::system_clock::now();
-            time_t tStart_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+            time_t tStart_time = std::chrono::system_clock::to_time_t(abs_startTime);
             char* startTime_text = ctime(&tStart_time);
             if (startTime_text[strlen(startTime_text)-1] == '\n') startTime_text[strlen(startTime_text)-1] = '\0';
-            fullString << "Start time: [" << startTime_text << "]" << "\n\n";
+            fullString << "Start time: [" << startTime_text << "]" << "\n";
+            init_string = fullString.str();
             total_progLen = FormatWithSymbol(int(total_val), "'").length();
             func_initd = true;
         }
+        else {
+            fullString << init_string;
+        }
         if(int(total_val) != total_val_sanityCheck) {
+            init_string= "";
             func_initd = false;
         }
 
@@ -1269,6 +1301,12 @@ namespace Useful {
         std::string emptSpac4(6-speed_formatted.length(), ' ');
         totalStr += emptSpac4+speed_formatted+"pt/s ";
 
+        double ETA_seconds = double(total_val-progress)/speed;
+        totalStr += " ETA: ";
+        if(ETA_seconds>60) totalStr += std::to_string(int(std::floor(ETA_seconds/60)))+" minutes ";
+        double _temp = 0;
+        totalStr += std::to_string(int(std::modf(ETA_seconds/60, &_temp)*60)) + " seconds.";
+
         fullString << totalStr.c_str();
         // if(printBar) printf(" %s\r", totalStr.c_str());
 
@@ -1277,7 +1315,7 @@ namespace Useful {
             char* endTime_text = ctime(&tEnd_time);
 
             if (endTime_text[strlen(endTime_text)-1] == '\n') endTime_text[strlen(endTime_text)-1] = '\0';
-            fullString << "\n\nEnd time  : [" << endTime_text << "]\n";
+            fullString << "\nEnd time  : [" << endTime_text << "]\n";
 
             std::chrono::duration<double> elapsedTime = std::chrono::system_clock::now()-abs_startTime;
 
@@ -1285,11 +1323,14 @@ namespace Useful {
             const auto mins = std::chrono::duration_cast<std::chrono::minutes>(elapsedTime - hrs);
             const auto secs = std::chrono::duration_cast<std::chrono::seconds>(elapsedTime - hrs - mins);
             const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(elapsedTime - hrs - mins - secs);
-            fullString << "System inactive for [" << hrs.count() <<
-            ":" << mins.count() <<
-            ":" << secs.count() <<
-            "." << ms.count() << "]"<< "\n";
-            // std::cout << "elapsed time: [" << elapsedTime.count() << "s]\n";
+            fullString << "elapsed time: ";
+            if(hrs.count()>0)   fullString << hrs.count()   << " hours ";
+            if(mins.count()>0)  fullString << mins.count()  << " minutes ";
+            fullString << secs.count() << "." << ms.count() << " seconds. ";
+            // fullString << "System inactive for (elapsed time) [" << hrs.count() <<
+            // ":" << mins.count() <<
+            // ":" << secs.count() <<
+            // "." << ms.count() << "] [h:min:sec]"<< "\n";
         }
         
         return fullString.str();

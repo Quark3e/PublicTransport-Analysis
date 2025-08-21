@@ -1,0 +1,1440 @@
+trip_id: "14010000668242753"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+start_time: "21:56:57"
+start_date: "20250121"
+schedule_relationship: CANCELED
+route_id: "9011001001800000"
+direction_id: 0
+
+trip_id: "14010000673287677"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+start_time: "22:17:08"
+start_date: "20250121"
+schedule_relationship: CANCELED
+route_id: "9011001001800000"
+direction_id: 0
+
+trip_id: "14010000668271329"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000668242789"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000656735748"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+start_time: "22:32:13"
+start_date: "20250121"
+schedule_relationship: CANCELED
+route_id: "9011001001800000"
+direction_id: 0
+
+trip_id: "14010000668257205"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673650562"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000668734586"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000668276396"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000668242896"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000635181471"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000669825053"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000668242967"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+start_time: "22:57:06"
+start_date: "20250121"
+schedule_relationship: CANCELED
+route_id: "9011001001800000"
+direction_id: 0
+
+trip_id: "14010000656145483"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000658165160"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000644879022"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000668257242"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000656770171"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000670758027"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000671777961"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000669278426"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000669278393"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673291101"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000624459408"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000672917661"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000676917624"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000676929175"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000563903267"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000671778010"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000674238880"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000642069950"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000671778073"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000674346423"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673383877"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000668310926"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000633702216"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000668310905"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000668271867"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000642062117"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000618693092"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000594393937"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000674903402"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673291556"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000656770310"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000668271578"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000668243039"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000621492487"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000665268472"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000635988383"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673291697"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000674903480"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000631888494"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000621492520"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673291765"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000669425751"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675698998"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000669278498"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675699035"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000656759369"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000672917719"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000648949647"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000666052712"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000669018676"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000641037411"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000678613563"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000668243150"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673291978"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000674039921"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673650789"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000676917662"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000640425975"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000676929213"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673292080"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673650842"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000669425841"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000573390471"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000670440541"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000594240699"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673292202"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000621492752"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000627850695"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000656736841"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675699174"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675809933"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000667421790"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000670440563"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000670440563"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000594245368"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000640426008"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675810038"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000573419767"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673292248"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000635182253"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000665575001"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000670440601"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000669105026"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000645767224"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000671835764"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673292356"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000621492888"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000630677120"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000631888534"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000624459491"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673440977"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000618693283"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000668257290"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000678385993"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673383962"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673292487"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000598815504"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000668286855"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000664246199"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675699437"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000670758280"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673292571"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000676874224"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000644179258"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000644179220"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000573419792"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673292528"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000669278527"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000653789977"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675699524"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673292618"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000621492963"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675417073"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673292656"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000670884349"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673292595"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000594240786"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673292795"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000573419819"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000669018724"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000664246262"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000666052762"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000666052797"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000664246232"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000668996459"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000670440628"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+start_time: "23:40:28"
+start_date: "20250121"
+schedule_relationship: CANCELED
+route_id: "9011001001900000"
+direction_id: 1
+
+trip_id: "14010000671986463"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000664322965"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000625869635"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000664161230"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000666052879"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000666476939"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000630677164"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000624459515"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000674006663"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000653790118"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675810194"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000669278556"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673292899"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673292877"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000577676707"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000664246338"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000621493033"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000672917775"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000670758333"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673383997"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000676917700"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000674006695"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000640454514"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000676929251"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000621493050"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000667959857"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000667959857"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000594080786"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000660528747"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000664323055"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000644510839"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673650991"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000573390599"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000621493068"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000644179305"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000549855266"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000594394133"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000671986493"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000594240820"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673441054"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673323360"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000642062167"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000645226383"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000674006719"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000618693337"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000618693337"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000618693337"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000594245396"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000674088163"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000671986565"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675699625"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000621493124"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000670440678"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000621493084"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000621493084"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675810249"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+start_time: "23:46:31"
+start_date: "20250121"
+schedule_relationship: CANCELED
+route_id: "9011001001900000"
+direction_id: 0
+
+trip_id: "14010000675810294"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675699645"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000509102393"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673651017"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000596812530"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673292938"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+start_time: "23:47:07"
+start_date: "20250121"
+schedule_relationship: ADDED
+route_id: "9011001001900000"
+direction_id: 0
+
+trip_id: "14010000673292976"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000637181499"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000668310987"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000618693365"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673651040"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000633702403"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000671986634"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000635182478"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000669425936"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000632535452"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+start_time: "23:48:24"
+start_date: "20250121"
+schedule_relationship: CANCELED
+route_id: "9011001001900000"
+direction_id: 1
+
+trip_id: "14010000575016350"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+start_time: "23:48:56"
+start_date: "20250121"
+schedule_relationship: CANCELED
+route_id: "9011001001900000"
+direction_id: 1
+
+trip_id: "14010000669278578"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000676868263"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000670758357"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675810316"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673292995"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675699667"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000653931748"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673384015"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000573419901"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000646015396"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000665355913"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000671406111"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673293015"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000666882908"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000594394177"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000656800027"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000594080809"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673293063"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000669018790"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673293082"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000644179365"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000670683892"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675810336"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673293120"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673293100"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000594394220"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000674006756"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000669278607"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000677498910"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000573419926"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000627850758"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000598815607"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000644179431"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000573419948"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000678613621"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673293202"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000670800948"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673293171"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000674088200"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675810352"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000621493264"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000553621301"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000621093826"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000632806707"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000631888586"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000670440713"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000669696635"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000618693453"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000644510872"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673293292"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000625869657"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000669825206"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000669007788"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000659001919"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000669018826"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673293401"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000635182559"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673293330"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000562052970"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000632806731"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673293428"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675417146"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675699719"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000664323152"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675810376"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673293500"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000641037520"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675699780"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675699743"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673293469"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000668243246"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000662276357"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000662276383"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673384036"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000541070240"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000659085248"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000671986657"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000670440742"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000621493380"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000562053000"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000676917738"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673441133"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000640454560"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000574348638"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000664323182"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000676868410"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000676929289"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000655060924"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000655060901"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000643927064"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000671986683"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000594080831"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000674046933"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000573390770"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000621493430"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673293554"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000676876045"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673293575"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000669426035"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000594394245"
+start_date: "20250121"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000664246470"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675699810"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000678206483"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000648949765"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000646015423"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000663640203"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000666476981"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000666477023"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000674006831"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675810420"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675699866"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675624169"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000670440802"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000594240870"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000640426114"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675699957"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673293684"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010516399904437"
+start_time: "00:02:45"
+start_date: "20250122"
+schedule_relationship: ADDED
+
+trip_id: "14010000670683964"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675624459"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000671835795"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000662276447"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000673441200"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000674006859"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675624512"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010516399878986"
+start_time: "00:06:15"
+start_date: "20250122"
+schedule_relationship: ADDED
+
+trip_id: "14010000662276473"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000670683987"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000670758430"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000665356205"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000662276516"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000594240930"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000675700171"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+
+trip_id: "14010000594240963"
+start_date: "20250122"
+schedule_relationship: SCHEDULED
+

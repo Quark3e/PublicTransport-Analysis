@@ -48,7 +48,8 @@ int main(int argc, char** argv) {
     std::cout << "Program start:----------\n" << std::endl;
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-    std::string defaultPD_file("C:/Users/berkh/Projects/Github_repo/PublicTransport-Analysis/dataset/realtime_historical_data/sl-ServiceAlerts-2025-01-22/sl/ServiceAlerts/2025/01/22/09/sl-servicealerts-2025-01-22T09-29-28Z.pb");
+    // std::string defaultPD_file("C:/Users/berkh/Projects/Github_repo/PublicTransport-Analysis/dataset/realtime_historical_data/sl-ServiceAlerts-2025-01-22/sl/ServiceAlerts/2025/01/22/09/sl-servicealerts-2025-01-22T09-29-28Z.pb");
+    std::string defaultPD_file("C:/Users/berkh/Projects/Github_repo/PublicTransport-Analysis/dataset/realtime_historical_data/sl-TripUpdates-2025-01-22/sl/TripUpdates/2025/01/22/00/sl-tripupdates-2025-01-21T23-59-38Z.pb");
     transit_realtime::TripUpdate trpUpdate;
     std::fstream testDataFile;
 
@@ -89,7 +90,7 @@ int main(int argc, char** argv) {
                 std::cout << " - Exception met at i["<<i<<"]: " << e.what() << std::endl;
             }
             
-            // std::cout << trpUpdate.stop_time_update(i).DebugString() << " \n\n";
+            std::cout << parsed_data.back().trip.trip_id << " \n";
             // departure_cnt++;
             
         }
@@ -116,7 +117,7 @@ int main(int argc, char** argv) {
     };
 
     std::cout << "\n--- Saving parsed data into file with name: \""<<path_pd_file.substr(0, path_pd_file.size()-3)+"__parsed_data.txt\""<<std::endl;
-    std::fstream file_parsedData("tripUpdates_parsed_data.txt", std::ios::out);
+    std::fstream file_parsedData("cpp__tripUpdates_parsed_data.txt", std::ios::out);
     if(!file_parsedData.is_open()) {
         std::cerr << "Failed to open parsedData output file." << std::endl;
         return 1;
