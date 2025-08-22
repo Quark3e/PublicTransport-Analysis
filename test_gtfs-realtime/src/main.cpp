@@ -71,6 +71,11 @@ int main(int argc, char** argv) {
     }
     trpUpdate.ParseFromIstream(&testDataFile);
 
+    // transit_realtime::FeedMessage msgs;
+    // msgs.ParseFromIstream(&testDataFile);
+    // std::cout << msgs.entity(0).trip_update().stop_time_update_size() << "\n"<<std::endl;
+    // exit(0);
+
     std::string val = "";
     size_t departure_cnt = 0;
     // stdout_file << trpUpdate.DebugString() << " \n\n";
@@ -79,12 +84,16 @@ int main(int argc, char** argv) {
     std::cout << "--- Parsing started ---" << std::endl;
     std::vector<TrpUpd> parsed_data;
 
+    std::fstream raw_DebugString("cpp__tripUpdates_raw_data.txt", std::ios::out);
+    if(!raw_DebugString.is_open()) throw std::runtime_error("failed to open \"cpp__tripUpdates_raw_data.txt\"");
     for(size_t i=0; i<trpUpdate.stop_time_update_size(); i++) {
-        // std::cout << "  stop_time_update["<<i<<"]\n";
-        // break;
+        
+        
         if(trpUpdate.stop_time_update(i).has_departure()) {
             try {
-                parsed_data.push_back(ParseDebugString(trpUpdate.stop_time_update(i).DebugString()));
+                std::string debugStr = trpUpdate.stop_time_update(i).DebugString();
+                parsed_data.push_back(ParseDebugString(debugStr));
+                raw_DebugString << debugStr << "\n";
             }
             catch(const std::exception& e) {
                 std::cout << " - Exception met at i["<<i<<"]: " << e.what() << std::endl;
@@ -96,6 +105,7 @@ int main(int argc, char** argv) {
         }
         // if(departure_cnt>5) break;
     }
+    raw_DebugString.close();
     std::cout << "--- Parsing finished ---" << std::endl;
     std::cout << "successfully parsed: "<<parsed_data.size() << " trips."<<std::endl;
 
@@ -290,7 +300,12 @@ TrpUpd ParseDebugString(std::string _strToParse) {
 
                 _refIdx = _strToParse.find('\n', _refIdx+1); //set _refIdx to index to newline after closing curly braces of STE.
                 break;
-            case 4: {// stop_id [string]
+            case 4: { // stop_id [string]
+                if(_strToParse.substr(_refIdx+1, _strToParse.find('\n', _refIdx+1)-_refIdx-1).find('{')!=std::string::npos) { //method to deal with stop_id weird data fuckery. NOTE: Temporary solution.
+                    /// encountered weird invalid data. Have to skip over this stop_id and pass an empty value.
+                    _refIdx = _strToParse.find('}', _refIdx+1)+1;
+                    break;
+                }
                 size_t _quoteMarkPos = _strToParse.find('\"', _refIdx);
                 _isol = _strToParse.substr(_quoteMarkPos+1, _strToParse.find('\"', _quoteMarkPos+1)-_quoteMarkPos-1);
                 stu_ref.stop_id = _isol;

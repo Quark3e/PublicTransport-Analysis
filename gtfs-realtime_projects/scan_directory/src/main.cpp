@@ -72,6 +72,16 @@ int main(int argc, char** argv) {
         std::cerr << "No trips to search for found.\n";
         exit(1);
     }
+    std::fstream file_saveTripsToFind(std::string("dataFile_tripsToFind.csv"), std::ios::out);
+    if(!file_saveTripsToFind.is_open()) {
+        std::cerr << "Failed to open file_saveTripsToFind file.\n";
+        exit(1);
+    }
+    file_saveTripsToFind << "trip_id\n";
+    for(std::string _tripsToFind : trip_id__found) {
+        file_saveTripsToFind << _tripsToFind << "\n";
+    }
+    file_saveTripsToFind.close();
 
     std::list<std::string> filesToSearch;
     size_t count_searchedDirs = 0;
@@ -113,7 +123,13 @@ int main(int argc, char** argv) {
             //---------- process start ----------
             
             std::string entry_filename = entryPathStr_itr->substr(Useful::findSubstr("sl-tripupdates-", *entryPathStr_itr));
-            int64_t filename_epoch = parse_epochTime_fromFilename(entry_filename);
+            int64_t filename_epoch = 0; 
+            try {
+                filename_epoch = parse_epochTime_fromFilename(entry_filename);
+            } catch(const std::exception& e) {
+                std::cout << "Failed to parse filename: "<< e.what() << '\n';
+            }
+            
             Useful::ANSI_mvprint(0, 9, std::string("reading entry #")+Useful::formatNumber(i, 3)+": \""+entry_filename+"\"; S.T.U. size:"+Useful::formatNumber(trpUpdate.stop_time_update_size())+"  ");
             for(size_t i_upd=0; i_upd<trpUpdate.stop_time_update_size(); i_upd++) {
                 storedData.push_back(ParseDebugString(trpUpdate.stop_time_update(i_upd).DebugString()));
@@ -126,7 +142,7 @@ int main(int argc, char** argv) {
                         break;
                     }
                 }
-                if(!tripToSearch) continue;
+                // if(!tripToSearch) continue;
                 for(size_t i_stu=0; i_stu<tempTrp.stop_time_updates.size(); i_stu++) {
                     auto tempSTU = tempTrp.stop_time_updates.at(i_stu);
                     if(!(tempSTU.arrival.delay==0 && tempSTU.departure.delay==0)) {
@@ -159,15 +175,22 @@ int main(int argc, char** argv) {
     Useful::PrintOut("Num [failures] :"+std::to_string(entryPathOpenFailures));
     
     std::cout << std::endl;
-    Useful::PrintOut(std::string("Num delays found: ")+std::to_string(storedData_tripDelays_idx.size())+" out of "+std::to_string(numTotalTripsRead)+" total trips.");
-    system("pause");
+    std::fstream file_foundDelays(std::string("dataFile_foundDelays_")+std::to_string(storedData_tripDelays_idx.size())+".csv", std::ios::out);
+    file_foundDelays << "filename_epoch,trip_id,STU_idx,stop_sequence,stop_id,delay_arrival,delay_departure\n";
     for(size_t i=0; i<storedData_tripDelays_idx.size(); i++) {
         auto refd = storedData_tripDelays_idx.at(i);
-        std::cout << " - filename_epoch: "<< refd.filename_epoch <<" | [trip_id: \"" << refd.trip_id << "\" | STU_idx: " << Useful::formatNumber(refd.STU_idx, 3) << " | stop_sequence: " << Useful::formatNumber(refd.stop_sequence, 3) << " | stop_id: " << refd.stop_id << "] : delays: ";
-        if(refd.arrival.delay!=0)   std::cout << " arr.:" << Useful::formatNumber(refd.arrival.delay, 6) << "   ";
-        if(refd.departure.delay!=0) std::cout << " dep.:" << Useful::formatNumber(refd.departure.delay, 6);
-        std::cout << std::endl;
+        file_foundDelays << refd.filename_epoch << "," << refd.trip_id << "," << refd.STU_idx << "," << refd.stop_sequence << "," << refd.stop_id << "," << refd.arrival.delay << "," << refd.departure.delay << "\n";
     }
+    file_foundDelays.close();
+    Useful::PrintOut(std::string("Num delays found: ")+std::to_string(storedData_tripDelays_idx.size())+" out of "+std::to_string(numTotalTripsRead)+" total trips.");
+    // system("pause");
+    // for(size_t i=0; i<storedData_tripDelays_idx.size(); i++) {
+    //     auto refd = storedData_tripDelays_idx.at(i);
+    //     std::cout << " - filename_epoch: "<< refd.filename_epoch <<" | [trip_id: \"" << refd.trip_id << "\" | STU_idx: " << Useful::formatNumber(refd.STU_idx, 3) << " | stop_sequence: " << Useful::formatNumber(refd.stop_sequence, 3) << " | stop_id: " << refd.stop_id << "] : delays: ";
+    //     if(refd.arrival.delay!=0)   std::cout << " arr.:" << Useful::formatNumber(refd.arrival.delay, 6) << "   ";
+    //     if(refd.departure.delay!=0) std::cout << " dep.:" << Useful::formatNumber(refd.departure.delay, 6);
+    //     std::cout << std::endl;
+    // }
     
     google::protobuf::ShutdownProtobufLibrary();
 
