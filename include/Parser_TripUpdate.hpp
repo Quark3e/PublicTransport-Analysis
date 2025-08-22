@@ -152,7 +152,12 @@ inline TrpUpd ParseDebugString(std::string _strToParse) {
 
                 _refIdx = _strToParse.find('\n', _refIdx+1); //set _refIdx to index to newline after closing curly braces of STE.
                 break;
-            case 4: {// stop_id [string]
+            case 4: { // stop_id [string]
+                if(_strToParse.substr(_refIdx+1, _strToParse.find('\n', _refIdx+1)-_refIdx-1).find('{')!=std::string::npos) { //method to deal with stop_id weird data fuckery. NOTE: Temporary solution.
+                    /// encountered weird invalid data. Have to skip over this stop_id and pass an empty value.
+                    _refIdx = _strToParse.find('}', _refIdx+1)+1;
+                    break;
+                }
                 size_t _quoteMarkPos = _strToParse.find('\"', _refIdx);
                 _isol = _strToParse.substr(_quoteMarkPos+1, _strToParse.find('\"', _quoteMarkPos+1)-_quoteMarkPos-1);
                 stu_ref.stop_id = _isol;
