@@ -26,6 +26,18 @@ void func_depthSearch(std::string _dirPath, std::list<std::string> *_storeResult
 // #define useTripFilter
 #define useStopTimesFile true
 
+struct StopID_refrSorted__trip_id {
+    std::string trip_id;
+    std::vector<std::string> trip_id_vec;
+};
+struct StopID_refrSorted__stop_seq {
+    uint32_t stop_sequence;
+    std::vector<StopID_refrSorted__trip_id> stop_seq_vec;
+};
+struct StopID_refrSorted {
+    std::vector<StopID_refrSorted__stop_seq> vec;
+};
+
 
 template<typename _vecType>
 void threadTask_loadFile(
@@ -66,7 +78,7 @@ void threadTask_loadFile(
     if(success) *success = true;
 }
 
-void func_loadFile__stop_times(
+StopID_refrSorted func_loadFile__stop_times(
     std::string filename,
     std::vector<std::vector<std::string>>& returVecRef,
     std::vector<std::string> tripFilter
@@ -230,6 +242,45 @@ void func_loadFile__stop_times(
     returVecRef = _tempCopy;
     cleanupDiff -= returVecRef.size();
 
+    StopID_refrSorted refrRetur;
+    for(size_t i=0; i<returVecRef.size(); i++) {
+        size_t _stop_seq = (returVecRef.at(4).size()>0? std::stoi(returVecRef.at(4)) : 0);
+        std::string _trip_id = returVecRef.at(0);
+        std::string _stop_id = returVecRef.at(3);
+        bool found__stop_seq    = false;
+        bool found__trip_id     = false;
+        for(size_t ii=0; ii<refrRetur.vec.size(); ii++) { //check every stop_seq
+            if(refrRetur.vec.at(ii).stop_sequence == _stop_seq) {
+                found__stop_seq = true;
+                found__trip_id = false;
+                for(size_t iii=0; iii<refrRetur.vec.at(ii).stop_seq_vec.size(); iii++) { //check every trip_id
+                    if(refrRetur.vec.at(ii).stop_seq_vec.at(iii).trip_id==_trip_id) {
+                        found__trip_id = true;
+                        /// assuming there are no copies of trip_id's for a given stop_id and stop_seq, a check for dupes isn't done. Will need to be tested when this code runs on main machine later on
+                        /// !!! NOTE: If this check below doesnt return positive then dont forget to delete it. The .trip_id_vec also needs to be removed since theoretically there should only exist one stop_id.
+                        for(size_t n=0; n<refrRetur.vec.at(ii).stop_seq_vec.at(iii).trip_id_vec.size(); n++) {
+                            if(refrRetur.vec.at(ii).stop_seq_vec.at(iii).trip_id_vec.at(n)==_stop_id) {
+                                std::cout << "STOP_ID_MATCH FOUND!!!"<<std::endl;
+                                system("pause");
+                            }
+                        }
+                        refrRetur.vec.at(ii).stop_seq_vec.at(iii).trip_id_vec.push_back(_stop_id);
+
+                        break;
+                    }
+                }
+                if(!found__trip_id) {
+                    refrRetur.vec.at(ii).vec.push_back({_trip_id, {_stop_id}});
+                }
+                break;
+            }
+        }
+        if(!found__stop_seq) {
+            refrRetur.vec.push_back({_stop_seq, {{_trip_id, {_stop_id}}}});
+        }
+    }
+
+
     terminalCursorPos.y++;
     terminalCursorPos.x = 0;
 
@@ -363,7 +414,7 @@ int main(int argc, char** argv) {
     // }
     // file_static_refData__stop_times.close();
     #if useStopTimesFile
-    func_loadFile__stop_times(path_static_historical_data+"/stop_times.csv", staticRefData__stop_times, trip_id__found);
+    auto refrTree = func_loadFile__stop_times(path_static_historical_data+"/stop_times.csv", staticRefData__stop_times, trip_id__found);
     #endif
 
 
@@ -381,7 +432,6 @@ int main(int argc, char** argv) {
     }
     
     
-
     terminalCursorPos.y+=3;
     Useful::ANSI_mvprint(terminalCursorPos.x, terminalCursorPos.y, "processing entries:");
     terminalCursorPos.y++;
@@ -449,14 +499,26 @@ int main(int argc, char** argv) {
                             Useful::ANSI_mvprint(terminalCursorPos.x+2+_tempString__readingEntry.size(), terminalCursorPos.y, std::string("stop_id empty. Searching stop_times refr vector:"), false);
                             exceptCatch_processID = 3;
                             bool _refrMatchFound = false;
-                            for(size_t i_refVec_stop_times=0; i_refVec_stop_times<staticRefData__stop_times.size(); i_refVec_stop_times++) {
-                                Useful::ANSI_mvprint(terminalCursorPos.x+2+_tempString__readingEntry.size()+49, terminalCursorPos.y, Useful::formatNumber(i_refVec_stop_times,10,1,"right",false,true), false);
-                                auto _vecRefLine = staticRefData__stop_times.at(i_refVec_stop_times);
-                                if(_vecRefLine.size()>=5 && tempTrp.trip.trip_id==_vecRefLine.at(0) && (_vecRefLine.at(4).size()>0 && std::stoi(_vecRefLine.at(4))==tempSTU.stop_sequence)) {
-                                    tempSTU.stop_id = _vecRefLine.at(3);
-                                    _refrMatchFound = true;
-                                    break;
+                            // for(size_t i_refVec_stop_times=0; i_refVec_stop_times<staticRefData__stop_times.size(); i_refVec_stop_times++) {
+                            //     Useful::ANSI_mvprint(terminalCursorPos.x+2+_tempString__readingEntry.size()+49, terminalCursorPos.y, Useful::formatNumber(i_refVec_stop_times,10,1,"right",false,true), false);
+                            //     auto _vecRefLine = staticRefData__stop_times.at(i_refVec_stop_times);
+                            //     if(_vecRefLine.size()>=5 && tempTrp.trip.trip_id==_vecRefLine.at(0) && (_vecRefLine.at(4).size()>0 && std::stoi(_vecRefLine.at(4))==tempSTU.stop_sequence)) {
+                            //         tempSTU.stop_id = _vecRefLine.at(3);
+                            //         _refrMatchFound = true;
+                            //         break;
+                            //     }
+                            // }
+                            for(auto i_stopseq : refrTree.vec) {
+                                if(tempSTU.stop_sequence==i_stopseq.stop_sequence) {
+                                    for(auto i_tripid : i_stopseq.stop_seq_vec) {
+                                        if(tempTrp.trip.trip_id==i_tripid.trip_id) {
+                                            tempSTU.stop_id = i_tripid.trip_id_vec.begin(); /// !!! NOTE: NEED TO BE CHANGED TO NOTE IMPLEMENT THE VECTOR.
+                                            _refrMatchFound = true;
+                                            break;
+                                        }
+                                    }
                                 }
+                                if(_refrMatchFound) break;
                             }
                             if(_refrMatchFound) Useful::ANSI_mvprint(terminalCursorPos.x+2+_tempString__readingEntry.size()+49, terminalCursorPos.y, "Match found.  ");
                             else  Useful::ANSI_mvprint(terminalCursorPos.x+2+_tempString__readingEntry.size()+49, terminalCursorPos.y, "Match not found.");
