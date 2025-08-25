@@ -11,6 +11,7 @@
 
 #include <sstream>
 #include <iomanip>
+#include <locale>
 #include <iostream>
 
 #include <Pos2d.hpp>
@@ -407,11 +408,15 @@ namespace Useful {
         size_t      width       = 0,
         int         precision   = 1,
         std::string align       = "right",
-        bool        numberFill  = false
+        bool        numberFill  = false,
+        bool        formatCommas= false
     ) {
         std::stringstream outStream, _temp;
         std::string _final;
         int fillZeros = 0;
+        if(formatCommas) {
+            outStream.imbue(std::locale(""));
+        }
         if(numberFill && align=="right") {
             _temp << std::fixed;
             _temp << std::setprecision(precision) << value;
@@ -1121,7 +1126,7 @@ namespace Useful {
      * @param method_widthOver Determines behavior when output exceeds width:
      *        0 - Do nothing,
      *        1 - Truncate,
-     *        2 - Split into multiple lines (default: 0).
+     *        2 - Split into multiple lines (default: 1).
      * @return int Returns 0 on success, 1 on invalid method_widthOver value.
      */
     template<typename _castType>
@@ -1134,7 +1139,8 @@ namespace Useful {
         bool        flushBeginning  = false,
         bool        numberFill      = false,
         int         precision       = 1,
-        size_t      method_widthOver= 1
+        size_t      method_widthOver= 1,
+        Pos2d<size_t>* cursorPos= nullptr
     ) {
         std::string initString = "[" + getCurrentTime()+"]: ";
         std::vector<std::string> formattedString;
@@ -1176,6 +1182,18 @@ namespace Useful {
             }
             std::cout << formattedString.at(i);
             std::cout << end;
+        }
+
+
+        if(cursorPos && formattedString.size()>0) {
+            if(end=="\n") {
+                cursorPos->operator[](1) += formattedString.size();
+                cursorPos->operator[](0) = 0;
+            }
+            else {
+                (*cursorPos).x += initString.size();//????
+                for(std::string str : formattedString) cursorPos->operator[](0) += str.size() + end.size();
+            }
         }
         if(flushEnd) std::cout.flush();
         return 0;
@@ -1297,13 +1315,15 @@ namespace Useful {
         std::string emptSpac3(100-int(floor(percent)), ' ');
         totalStr += "|"+progressStr+emptSpac3+"|: ";
 
-        std::string speed_formatted = formatNumber(speed, 1);
+        std::string speed_formatted = formatNumber(speed, 5, 3);
         std::string emptSpac4(6-speed_formatted.length(), ' ');
         totalStr += emptSpac4+speed_formatted+"pt/s ";
 
-        double ETA_seconds = double(total_val-progress)/speed;
+        std::chrono::duration<double> ETA_time = double(total_val-progress)/speed;
         totalStr += " ETA: ";
-        if(ETA_seconds>60) totalStr += std::to_string(int(std::floor(ETA_seconds/60)))+" minutes ";
+        if(ETA_seconds>60) {
+            totalStr += std::to_string(int(std::floor(ETA_seconds/60)))+" minutes ";
+        }
         double _temp = 0;
         totalStr += std::to_string(int(std::modf(ETA_seconds/60, &_temp)*60)) + " seconds.";
 

@@ -18,7 +18,9 @@
 #include <filesystem>
 
 #include <chrono>
+
 #include <thread>
+#include <mutex>
 
 #include <useful.hpp>
 
@@ -27,5 +29,6 @@
 
 #include <gtfs-realtime.pb.h>
 
+#include <Windows.h>
 
 #endif //HPP_INCLUDES

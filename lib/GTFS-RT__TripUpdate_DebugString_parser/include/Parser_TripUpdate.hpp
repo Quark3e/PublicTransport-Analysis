@@ -38,6 +38,31 @@ struct TrpUpd {
     Vhcl                vehicle{""};
 };
 
+inline size_t _findSubstr(std::string _toFind, std::string _toSearch) {
+    size_t size_toFind  = _toFind.size();
+    size_t size_toSearch= _toSearch.size();
+    if(size_toFind==0) throw std::runtime_error("findSubstr(std::string, std::string) arg for _toFind is empty, which is not allowed.");
+    else if(size_toSearch==0) throw std::runtime_error("findSubstr(std::string, std::string) arg for _toSearch is empty, which is not allowed.");
+    else if(size_toFind>size_toSearch) throw std::runtime_error("findSubstr(std::string, std::string) string length of _toFind is bigger than _toSearch which is not allowed.");
+    else if(size_toFind==size_toSearch) return (_toFind==_toSearch? 0 : std::string::npos);
+
+    size_t pos = 0;
+    bool matchFound = true;
+    for(size_t i=0; i<size_toSearch-size_toFind; i++) {
+        if(_toSearch.at(i)==_toFind.at(0)) {
+            matchFound = true;
+            for(size_t ii=0; ii<size_toFind; ii++) {
+                if(_toFind.at(ii)!=_toSearch.at(i+ii)) {
+                    matchFound = false;
+                    break;
+                }
+            }
+            if(matchFound) return i;
+        }
+    }
+    return std::string::npos;
+}
+
 
 inline TrpUpd ParseDebugString(std::string _strToParse) {
     if(_strToParse.size()==0) throw std::runtime_error("Empty string");
@@ -155,7 +180,8 @@ inline TrpUpd ParseDebugString(std::string _strToParse) {
             case 4: { // stop_id [string]
                 if(_strToParse.substr(_refIdx+1, _strToParse.find('\n', _refIdx+1)-_refIdx-1).find('{')!=std::string::npos) { //method to deal with stop_id weird data fuckery. NOTE: Temporary solution.
                     /// encountered weird invalid data. Have to skip over this stop_id and pass an empty value.
-                    _refIdx = _strToParse.find('}', _refIdx+1)+1;
+                    /// had to resort to a more detailed search because apparently the members of this incorrect type can hold its own members... fuck
+                    _refIdx +=_findSubstr("\n    }", _strToParse.substr(_refIdx))+6;
                     break;
                 }
                 size_t _quoteMarkPos = _strToParse.find('\"', _refIdx);
