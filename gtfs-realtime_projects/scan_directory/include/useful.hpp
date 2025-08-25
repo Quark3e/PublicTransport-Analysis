@@ -1319,11 +1319,9 @@ namespace Useful {
         std::string emptSpac4(6-speed_formatted.length(), ' ');
         totalStr += emptSpac4+speed_formatted+"pt/s ";
 
-        std::chrono::duration<double> ETA_time = double(total_val-progress)/speed;
+        double ETA_seconds = double(total_val-progress)/speed;
         totalStr += " ETA: ";
-        if(ETA_seconds>60) {
-            totalStr += std::to_string(int(std::floor(ETA_seconds/60)))+" minutes ";
-        }
+        if(ETA_seconds>60) totalStr += std::to_string(int(std::floor(ETA_seconds/60)))+" minutes ";
         double _temp = 0;
         totalStr += std::to_string(int(std::modf(ETA_seconds/60, &_temp)*60)) + " seconds.";
 

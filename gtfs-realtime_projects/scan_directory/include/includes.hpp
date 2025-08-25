@@ -14,6 +14,10 @@
 #include <string>
 #include <cmath>
 
+#include <functional>
+#include <numeric>
+
+
 #include <fstream>
 #include <filesystem>
 
@@ -22,13 +26,17 @@
 #include <thread>
 #include <mutex>
 
-#include <useful.hpp>
-
 #include <Parser_TripUpdate.hpp>
-
-
 #include <gtfs-realtime.pb.h>
 
-#include <Windows.h>
+// #include <Windows.h>
+
+#include <useful.hpp>
+
+#include <project_macros.hpp>
+#include <variables.hpp>
+#include <helper_functions.hpp>
+
+
 
 #endif //HPP_INCLUDES
