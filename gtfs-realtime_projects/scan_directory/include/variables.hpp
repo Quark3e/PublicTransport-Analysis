@@ -36,6 +36,7 @@ struct parseException_DebugString {
 inline Pos2d<size_t>    terminalCursorPos{0, 1};
 inline Pos2d<int>       dim_terminal{0, 0};
 
+inline std::atomic<bool> program_running{true};
 
 inline std::string path_static_historical_data = "C:/Users/berkh/Projects/Github_repo/PublicTransport-Analysis/dataset/static_historical_data/GTFS-SL-2025-01-22";
 

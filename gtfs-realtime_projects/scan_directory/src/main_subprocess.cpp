@@ -11,6 +11,7 @@ StopID_refrSorted subProcess_loadFile__stop_times(
     size_t maxThreadCount = 1; //std::thread::hardware_concurrency();
     if(maxThreadCount==0) {
         std::cerr << "std::thread::hardware_concurrency() return 0\n";
+        program_running = false;
         exit(1);
     }
 
@@ -25,6 +26,7 @@ StopID_refrSorted subProcess_loadFile__stop_times(
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     if(stop_times_max_lineCount<1000) {
         std::cerr << "stop_times file returned <1000 number of lines somehow\n.";
+        program_running = false;
         exit(1);
     }
     
@@ -34,6 +36,7 @@ StopID_refrSorted subProcess_loadFile__stop_times(
     std::list<bool> result_threadTask(maxThreadCount, false);
     auto itr__result_threadTask = result_threadTask.begin();
     std::advance(itr__result_threadTask, 1);
+
     auto lambdaFunc_parse_csv__stop_times = [tripFilter](std::string _line, bool* _tripFound=nullptr) {
         std::vector<std::string> csv_line;
         for(std::string _trip_id : tripFilter) {
@@ -49,6 +52,10 @@ StopID_refrSorted subProcess_loadFile__stop_times(
         }
         return csv_line;
     };
+    
+    threadTask_loadFile__startIdxCnt = 0;
+
+    /// Initialise the different threads.
     for(size_t id_thread=1; id_thread<maxThreadCount; id_thread++) {
         threadObjects.emplace_back([&] {
             threadTask_loadFile<std::vector<std::string>>(
@@ -80,8 +87,7 @@ StopID_refrSorted subProcess_loadFile__stop_times(
     size_t delta_lineCount_t1 = 0;
 
     terminalCursorPos.y++;
-    size_t NumSuccessLines = 0; //temporary. Prob. won't be usable later on with multithreading enabled.
-    std::list<size_t>& ref_refrFoundIdx = *refrFoundIdx.begin();
+    // std::list<size_t>& ref_refrFoundIdx = *refrFoundIdx.begin();
     for(size_t lineCount=0; std::getline(fileToRead, _line, '\n'); lineCount++) {
         if(_line.size()==0) continue;
         bool _tripIdFromStopTimesFound = false;
@@ -89,10 +95,9 @@ StopID_refrSorted subProcess_loadFile__stop_times(
             returVecRef.at(lineCount) = lambdaFunc_parse_csv__stop_times(_line, &_tripIdFromStopTimesFound);
             //thread issues????
             
-            if(_tripIdFromStopTimesFound) {
-                ref_refrFoundIdx.push_back(lineCount);
-                NumSuccessLines+=1;
-            }
+            // if(_tripIdFromStopTimesFound) {
+            //     ref_refrFoundIdx.push_back(lineCount);
+            // }
         }
         catch(const std::exception& e) {
             *itr__result_threadTask = false;

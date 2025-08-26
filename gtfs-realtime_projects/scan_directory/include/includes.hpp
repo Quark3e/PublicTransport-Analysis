@@ -25,6 +25,7 @@
 
 #include <thread>
 #include <mutex>
+#include <atomic>
 
 #include <Parser_TripUpdate.hpp>
 #include <gtfs-realtime.pb.h>

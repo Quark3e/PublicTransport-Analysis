@@ -4,6 +4,7 @@
 
 
 int main(int argc, char** argv) {
+    program_running = true;
     GOOGLE_PROTOBUF_VERIFY_VERSION;
     
     dim_terminal = Useful::getTerminalSize();
@@ -12,6 +13,7 @@ int main(int argc, char** argv) {
 
     if(argc <= 1) {
         std::cerr << "Invalid number of argc. No path to directory given." << std::endl;
+        program_running = false;
         return 1;
     }
 
@@ -19,6 +21,7 @@ int main(int argc, char** argv) {
     path_dirToSearch = argv[1];
     if(!std::filesystem::is_directory(path_dirToSearch)) {
         std::cerr << "ERROR: the program argument for path given is not a valid path." << std::endl;
+        program_running = false;
         return 1;
     }
 
@@ -71,6 +74,7 @@ int main(int argc, char** argv) {
     Useful::PrintOut(std::string("Num [found valid file entries]: ")+std::to_string(filesToSearch.size()),dim_terminal.x+1, "left","\n",true,false,false,1,1,&terminalCursorPos);
     if(filesToSearch.size()==0) {
         Useful::PrintOut("found no entries. closing program..");
+        program_running = false;
         return 0;
     }
     
@@ -114,6 +118,8 @@ int main(int argc, char** argv) {
     
     google::protobuf::ShutdownProtobufLibrary();
     std::cout << std::endl;
+
+    program_running = false;
 
     return 0;
 }
