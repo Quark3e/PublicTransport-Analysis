@@ -176,7 +176,7 @@ StopID_refrSorted subProcess_loadFile__stop_times(
     
     fileToRead.close();
     *itr__result_threadTask = true;
-    ///--- Main thread task end ---
+    ///--- Main thread task end ---///
     
     u_lck_cout.lock();
     Useful::ANSI_mvprint(0, terminalCursorPos.y+1+maxThreadCount+5, std::string("finished main thread's process: waiting for other threads"));
@@ -198,7 +198,7 @@ StopID_refrSorted subProcess_loadFile__stop_times(
     terminalCursorPos.y+= 1;
     terminalCursorPos.x = 0;
     
-    // returVecRef vector cleanup
+    /// returVecRef vector cleanup
     bool emptyVectorFound = false;
     Useful::PrintOut(std::string("Performing vector cleanup. "),dim_terminal.x+1,"left","\n",true,false,false,1,1,&terminalCursorPos);
     size_t cleanupDiff = returVecRef.size();
@@ -216,7 +216,26 @@ StopID_refrSorted subProcess_loadFile__stop_times(
     cleanupDiff -= returVecRef.size();
     Useful::ANSI_mvprint(terminalCursorPos.x, terminalCursorPos.y+1, std::string("cleanup diff: ")+std::to_string(cleanupDiff), false);
     
+    ///--- save the cleaned up file as a temporary
 
+    terminalCursorPos.y += 1;
+
+    Useful::PrintOut("Saving cleaned up stop_times file into a temporary file \"returVecRef_temp.csv\"",std::string::npos,"left","\n",true,false,false,1,1,&terminalCursorPos);
+    std::ofstream file_returVecRef_temp("returVecRef_temp.csv");
+    if(file_returVecRef_temp.is_open()) {
+        for(size_t i=0; i<returVecRef.size(); i++) {
+            for(size_t ii=0; ii<returVecRef.at(i).size(); ii++) {
+                file_returVecRef_temp << returVecRef.at(i).at(ii) << (ii+1<returVecRef.at(i).size()? "," : "\n");
+            }
+        }
+    }
+    file_returVecRef_temp.close();
+    Useful::PrintOut("Finished saving file.",std::string::npos,"left","\n",true,false,false,1,1,&terminalCursorPos);
+    
+    ///---
+
+    
+    
     terminalCursorPos.y+=2;
 
     Useful::PrintOut("Performing refrSorted tree fill.",std::string::npos,"left","\n",true,false,false,1,1,&terminalCursorPos);
@@ -225,7 +244,7 @@ StopID_refrSorted subProcess_loadFile__stop_times(
     StopID_refrSorted refrRetur;
     try {
         for(size_t i=0; i<returVecRef.size(); i++) {
-            Useful::ANSI_mvprint(terminalCursorPos.x, terminalCursorPos.y-1, std::string("returVecRef.at(i).size() : ")+Useful::formatNumber(returVecRef.at(i).size(),2));
+            Useful::ANSI_mvprint(terminalCursorPos.x, terminalCursorPos.y-1, std::string("returVecRef.at(")+std::to_string(i)+").size() : ")+Useful::formatNumber(returVecRef.at(i).size(),2));
             uint32_t _stop_seq = (returVecRef.at(i).at(4).size()>0? std::stoi(returVecRef.at(i).at(4)) : 0);
             std::string _trip_id = returVecRef.at(i).at(0);
             std::string _stop_id = returVecRef.at(i).at(3);
