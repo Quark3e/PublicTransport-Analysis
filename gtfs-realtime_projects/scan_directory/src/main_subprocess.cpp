@@ -244,7 +244,7 @@ StopID_refrSorted subProcess_loadFile__stop_times(
     StopID_refrSorted refrRetur;
     try {
         for(size_t i=0; i<returVecRef.size(); i++) {
-            Useful::ANSI_mvprint(terminalCursorPos.x, terminalCursorPos.y-1, std::string("returVecRef.at(")+std::to_string(i)+").size() : ")+Useful::formatNumber(returVecRef.at(i).size(),2));
+            Useful::ANSI_mvprint(terminalCursorPos.x, terminalCursorPos.y-1, std::string("returVecRef.at(")+std::to_string(i)+").size() : "+Useful::formatNumber(returVecRef.at(i).size(),2));
             uint32_t _stop_seq = (returVecRef.at(i).at(4).size()>0? std::stoi(returVecRef.at(i).at(4)) : 0);
             std::string _trip_id = returVecRef.at(i).at(0);
             std::string _stop_id = returVecRef.at(i).at(3);
