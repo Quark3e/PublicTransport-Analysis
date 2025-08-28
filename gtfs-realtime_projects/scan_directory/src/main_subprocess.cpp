@@ -15,7 +15,18 @@ StopID_refrSorted subProcess_loadFile__stop_times(
         exit(1);
     }
 
-    std::ifstream in_stream(filename);
+
+    std::ifstream in_stream;
+    std::ifstream file__returVecRef_temp("returVecRef_temp.csv");
+    if(file__returVecRef_temp.is_open()) {
+        Useful::PrintOut("Using returVecRef_temp.csv file.",std::string::npos, "left","",true,false,false,1,1,&terminalCursorPos);
+        in_stream = file__returVecRef_temp;
+    }
+    else {
+        Useful::PrintOut("Is NOT using returVecRef_temp.csv file.",std::string::npos, "left","",true,false,false,1,1,&terminalCursorPos);
+        in_stream.open(filename);
+    }
+
     size_t columnCount = 10;
     Useful::PrintOut("Checking number of lines in stop_times refr. file..", std::string::npos, "left","",true,false,false,1,1,&terminalCursorPos);
     size_t stop_times_max_lineCount = std::count_if(std::istreambuf_iterator<char>{in_stream}, {}, [](char c) { return c == '\n'; });
@@ -218,20 +229,25 @@ StopID_refrSorted subProcess_loadFile__stop_times(
     
     ///--- save the cleaned up file as a temporary
 
-    terminalCursorPos.y += 1;
-
-    Useful::PrintOut("Saving cleaned up stop_times file into a temporary file \"returVecRef_temp.csv\"",std::string::npos,"left","\n",true,false,false,1,1,&terminalCursorPos);
-    std::ofstream file_returVecRef_temp("returVecRef_temp.csv");
-    if(file_returVecRef_temp.is_open()) {
-        for(size_t i=0; i<returVecRef.size(); i++) {
-            for(size_t ii=0; ii<returVecRef.at(i).size(); ii++) {
-                file_returVecRef_temp << returVecRef.at(i).at(ii) << (ii+1<returVecRef.at(i).size()? "," : "\n");
+    size_t idx_filename_wout_path = Useful::findSubstr("returVecRef_temp.csv", filename);
+    if(idx_filename_wout_path!=std::string::npos) {
+        terminalCursorPos.y += 1;
+        Useful::PrintOut("Saving cleaned up stop_times file into a temporary file \"returVecRef_temp.csv\"",std::string::npos,"left","\n",true,false,false,1,1,&terminalCursorPos);
+    
+        std::ofstream file_returVecRef_temp("returVecRef_temp.csv");
+        if(file_returVecRef_temp.is_open()) {
+            for(size_t i=0; i<returVecRef.size(); i++) {
+                for(size_t ii=0; ii<returVecRef.at(i).size(); ii++) {
+                    file_returVecRef_temp << returVecRef.at(i).at(ii) << (ii+1<returVecRef.at(i).size()? "," : "\n");
+                }
             }
         }
+        file_returVecRef_temp.close();
+        Useful::PrintOut("Finished saving file.",std::string::npos,"left","\n",true,false,false,1,1,&terminalCursorPos);
     }
-    file_returVecRef_temp.close();
-    Useful::PrintOut("Finished saving file.",std::string::npos,"left","\n",true,false,false,1,1,&terminalCursorPos);
-    
+    else {
+        
+    }
     ///---
 
     

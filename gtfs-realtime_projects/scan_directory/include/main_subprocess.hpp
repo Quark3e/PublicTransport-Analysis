@@ -87,7 +87,9 @@ inline void threadTask_loadFile(
             progr_percent = double(lineCount)/line_lim.at(1);
             Useful::ANSI_mvprint(
                 31,terminalCursorPos.y+thread_ID+2,
-                Useful::formatNumber(progr_percent*100, 5, 1)+"% | foundIdx_list.size(): "+Useful::formatNumber(foundIdx_list.size(),8,1,"right",false,true)+" | lineCount: "+Useful::formatNumber(lineCount,8,1,"right",false,true),
+                Useful::formatNumber(progr_percent*100, 5, 1)+"% | foundIdx_list.size(): "+
+                Useful::formatNumber(foundIdx_list.size(),8,1,"right",false,true)+" | lineCount: "+
+                Useful::formatNumber(lineCount,8,1,"right",false,true),
                 false
             );
             u_lck_cout.unlock();

@@ -72,6 +72,7 @@ int main(int argc, char** argv) {
 
 
     #if useStopTimesFile
+    
     auto refrTree = subProcess_loadFile__stop_times(path_static_historical_data+"/stop_times.csv", staticRefData__stop_times, trip_id__found);
     #endif //add stop_times arg to refrTree
 
