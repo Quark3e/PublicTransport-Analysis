@@ -20,7 +20,7 @@ StopID_refrSorted subProcess_loadFile__stop_times(
     std::ifstream file__returVecRef_temp("returVecRef_temp.csv");
     if(file__returVecRef_temp.is_open()) {
         Useful::PrintOut("Using returVecRef_temp.csv file.",std::string::npos, "left","",true,false,false,1,1,&terminalCursorPos);
-        in_stream = file__returVecRef_temp;
+        in_stream.swap(file__returVecRef_temp);
     }
     else {
         Useful::PrintOut("Is NOT using returVecRef_temp.csv file.",std::string::npos, "left","",true,false,false,1,1,&terminalCursorPos);
