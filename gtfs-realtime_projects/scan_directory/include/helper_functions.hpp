@@ -21,5 +21,27 @@ void func_depthSearch(std::string _dirPath, std::list<std::string> *_storeResult
 
 int64_t parse_epochTime_fromFilename(std::string _toParse);
 
+template <typename T>
+struct atomwrapper
+{
+  std::atomic<T> _a;
+
+  atomwrapper()
+    :_a()
+  {}
+
+  atomwrapper(const std::atomic<T> &a)
+    :_a(a.load())
+  {}
+
+  atomwrapper(const atomwrapper &other)
+    :_a(other._a.load())
+  {}
+
+  atomwrapper &operator=(const atomwrapper &other)
+  {
+    _a.store(other._a.load());
+  }
+};
 
 #endif //HPP_HELPER_FUNCTIONS

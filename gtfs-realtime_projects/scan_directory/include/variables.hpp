@@ -51,6 +51,10 @@ inline std::vector<std::string> trip_id__found;
 inline std::vector<std::vector<std::string>> staticRefData__stop_times;
 
 
+inline std::mutex mtx_cout;
+
+/// Whether the number of threads to run is limited from program start. -1 means no limit is to be used.
+inline int setThreadLim = -1;
 
 
 #endif //HPP_VARIABLES

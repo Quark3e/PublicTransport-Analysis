@@ -5,6 +5,18 @@
 
 int main(int argc, char** argv) {
     program_running = true;
+	
+	
+	for(size_t i=2; i<argc; i++) {
+		std::string arg_str(argv[i]);
+		
+		
+		size_t idx_setThreadLim = 0;
+		if((idx_setThreadLim=Useful::findSubstr("-threadLim:", arg_str))!=std::string::npos) {
+			setThreadLim = std::stoul(arg_str.substr(idx_setThreadLim+11));
+		}
+	}
+	
     GOOGLE_PROTOBUF_VERIFY_VERSION;
     
     dim_terminal = Useful::getTerminalSize();
@@ -28,7 +40,7 @@ int main(int argc, char** argv) {
     int search_depth = 1;
 
 
-    Useful::PrintOut("loading file_static_refData__trips vector with trip values which's route_id matched..", dim_terminal.x, "left", "",true,false,false,1,1,&terminalCursorPos);
+    Useful::PrintOut("loading file_static_refData__trips vector with trip values which's route_id matched..", std::string::npos, "left", "",true,false,false,1,1,&terminalCursorPos);
     std::fstream file_static_refData__trips(path_static_historical_data+"/trips.csv", std::ios::in);
     for(std::string _line; std::getline(file_static_refData__trips, _line, '\n');) {
         bool matched = false;
@@ -83,7 +95,12 @@ int main(int argc, char** argv) {
     
     terminalCursorPos.y+=3;
 
-    std::vector<parseException_DebugString> vecExceptions_DebugString = subProcess_processEntries(filesToSearch, refrTree);
+    
+    size_t numTotalTripsRead = 0;
+    size_t entryPathOpenFailures = 0;
+    std::vector<STU_refd> storedData_tripDelays_idx;
+
+    std::vector<parseException_DebugString> vecExceptions_DebugString = subProcess_processEntries(filesToSearch, refrTree, numTotalTripsRead, entryPathOpenFailures, storedData_tripDelays_idx);
 
     
     Useful::PrintOut("finished processing every entry.",dim_terminal.x+1, "left","\n",true,false,false,1,1,&terminalCursorPos);
@@ -96,7 +113,7 @@ int main(int argc, char** argv) {
         file__vecExceptions_DebugString.close();
     }
 
-    progressBar = Useful::progressBar(filesToSearch.size(), filesToSearch.size(), true, true);
+    std::string progressBar = Useful::progressBar(filesToSearch.size(), filesToSearch.size(), true, true);
     Useful::ANSI_mvprint(terminalCursorPos.x, terminalCursorPos.y+=5, "", false);
     fmt::print(progressBar);
     

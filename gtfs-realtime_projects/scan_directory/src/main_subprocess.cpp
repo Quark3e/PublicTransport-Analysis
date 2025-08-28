@@ -8,7 +8,7 @@ StopID_refrSorted subProcess_loadFile__stop_times(
     std::vector<std::vector<std::string>>& returVecRef,
     std::vector<std::string> tripFilter
 ) {
-    size_t maxThreadCount = 1; //std::thread::hardware_concurrency();
+    size_t maxThreadCount = (setThreadLim>=0? setThreadLim : std::thread::hardware_concurrency());
     if(maxThreadCount==0) {
         std::cerr << "std::thread::hardware_concurrency() return 0\n";
         program_running = false;
@@ -17,10 +17,11 @@ StopID_refrSorted subProcess_loadFile__stop_times(
 
     std::ifstream in_stream(filename);
     size_t columnCount = 10;
-    Useful::PrintOut("Checking number of lines in stop_times refr. file..", dim_terminal.x, "left","",true,false,false,1,1,&terminalCursorPos);
+    Useful::PrintOut("Checking number of lines in stop_times refr. file..", std::string::npos, "left","",true,false,false,1,1,&terminalCursorPos);
     size_t stop_times_max_lineCount = std::count_if(std::istreambuf_iterator<char>{in_stream}, {}, [](char c) { return c == '\n'; });
-    Useful::ANSI_mvprint(terminalCursorPos.x, terminalCursorPos.y, std::string("[maxThreadCount:")+std::to_string(maxThreadCount)+", stop_times file line count:"+Useful::formatNumber(stop_times_max_lineCount,dim_terminal.x+1,1,"right",false,true)+"]");
-    terminalCursorPos.y++;
+    Useful::ANSI_mvprint(terminalCursorPos.x, terminalCursorPos.y, std::string("[maxThreadCount:")+std::to_string(maxThreadCount)+", stop_times file line count:"+Useful::formatNumber(stop_times_max_lineCount,0,1,"right",false,true)+"]");
+    
+    terminalCursorPos.y +=4;
     terminalCursorPos.x = 0;
     
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
@@ -35,39 +36,55 @@ StopID_refrSorted subProcess_loadFile__stop_times(
     std::vector<std::thread> threadObjects;
     std::list<bool> result_threadTask(maxThreadCount, false);
     auto itr__result_threadTask = result_threadTask.begin();
-    std::advance(itr__result_threadTask, 1);
+    auto itr__foundIdx_threadTask = refrFoundIdx.begin();
+    // std::advance(itr__result_threadTask, 1);
 
-    auto lambdaFunc_parse_csv__stop_times = [tripFilter](std::string _line, bool* _tripFound=nullptr) {
-        std::vector<std::string> csv_line;
-        for(std::string _trip_id : tripFilter) {
-            if(_line.substr(0, _line.find(','))==_trip_id) {
-                if(_tripFound) *_tripFound = true;
-                size_t comma_idx = std::string::npos;
-                do {
-                    csv_line.push_back(_line.substr(comma_idx+1, _line.find(',', comma_idx+1)-comma_idx-1));
-                    comma_idx = _line.find(',', comma_idx+1);
-                } while (comma_idx!=std::string::npos);
-                break;
-            }
-        }
-        return csv_line;
-    };
+
     
     threadTask_loadFile__startIdxCnt = 0;
 
+    std::unique_lock<std::mutex> u_lck_cout(mtx_cout, std::defer_lock);
+
+    if(maxThreadCount>1) Useful::PrintOut("Starting threads to load stop_times file.",std::string::npos,"left","\n",true,false,false,1,1,&terminalCursorPos);
+    std::string _tempStr = "|";
+    // for(size_t i=0; i<maxThreadCount; i++) _tempStr += "     |";
+        
+    std::vector<std::vector<size_t>> idx_lim;
+    // std::vector<atomwrapper<size_t>> idx_progr;
+    std::list<size_t> idx_progr(maxThreadCount, 0);
+    auto itr__idx_progr_threadTask = idx_progr.begin();
+
+
+    for(size_t _thr=0; _thr<maxThreadCount; _thr++) {
+        size_t idx_gap = float(stop_times_max_lineCount)/float(maxThreadCount);
+        size_t idx_start = _thr*idx_gap;
+        idx_lim.push_back({idx_start, idx_gap}); //{start, gap, progress}
+        // idx_progr.push_back(0);
+    }
+
+    std::chrono::system_clock::time_point times_threadTasks_start = std::chrono::system_clock::now();
+    auto times_threadTasks_start_str = std::chrono::system_clock::to_time_t(times_threadTasks_start);
+    Useful::PrintOut(std::string("Process: threadTask: started : ")+std::ctime(&times_threadTasks_start_str),std::string::npos,"left","\n",true,false,false,1,1,&terminalCursorPos);
+
     /// Initialise the different threads.
     for(size_t id_thread=1; id_thread<maxThreadCount; id_thread++) {
-        threadObjects.emplace_back([&] {
+        std::advance(itr__result_threadTask, 1);
+        std::advance(itr__foundIdx_threadTask, 1);
+        std::advance(itr__idx_progr_threadTask, 1);
+        threadObjects.emplace_back([&, id_thread, filename] {
             threadTask_loadFile<std::vector<std::string>>(
-                returVecRef,
+                std::ref(returVecRef),
+                std::ref(*itr__foundIdx_threadTask),
+                tripFilter,
                 filename,
-                lambdaFunc_parse_csv__stop_times,
                 id_thread,
                 maxThreadCount,
+                stop_times_max_lineCount,
+                std::ref(idx_lim.at(id_thread)),
+                std::ref(*itr__idx_progr_threadTask),
                 &*itr__result_threadTask
             );
         });
-        std::advance(itr__result_threadTask, 1);
     }
 
     ///--- Main thread task start --- ///!! NOTE: NEED TO IMPLEMENT CHANGES BEFORE USING MULTITHREADING
@@ -86,71 +103,107 @@ StopID_refrSorted subProcess_loadFile__stop_times(
     std::chrono::duration<double> interval_dur;
     size_t delta_lineCount_t1 = 0;
 
-    terminalCursorPos.y++;
-    // std::list<size_t>& ref_refrFoundIdx = *refrFoundIdx.begin();
-    for(size_t lineCount=0; std::getline(fileToRead, _line, '\n'); lineCount++) {
+
+    for(size_t _ign=0; _ign<idx_lim.at(0).at(0); _ign++) fileToRead.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
+    
+    u_lck_cout.lock();
+    Useful::ANSI_mvprint(4,terminalCursorPos.y+2,Useful::formatNumber(0, 2)+" : ["+Useful::formatNumber(idx_lim.at(0).at(0), 9,1,"right",false,true)+":"+Useful::formatNumber(idx_lim.at(0).at(0)+idx_lim.at(0).at(1), 9,1,"right",false,true)+"] : ");
+    u_lck_cout.unlock();
+
+    
+    double progr_percent = 0;
+
+    std::list<size_t>& ref_refrFoundIdx = *refrFoundIdx.begin();
+
+    for(size_t lineCount=0; lineCount<idx_lim.at(0).at(1); lineCount++) {
+        std::getline(fileToRead, _line, '\n');
+
         if(_line.size()==0) continue;
         bool _tripIdFromStopTimesFound = false;
         try {
-            returVecRef.at(lineCount) = lambdaFunc_parse_csv__stop_times(_line, &_tripIdFromStopTimesFound);
+            returVecRef.at(lineCount) = lambdaFunc_parse_csv__stop_times(_line, &_tripIdFromStopTimesFound, tripFilter);
             //thread issues????
-            
-            // if(_tripIdFromStopTimesFound) {
-            //     ref_refrFoundIdx.push_back(lineCount);
-            // }
+
+            if(_tripIdFromStopTimesFound) ref_refrFoundIdx.push_back(idx_lim.at(0).at(0)+lineCount);
         }
         catch(const std::exception& e) {
             *itr__result_threadTask = false;
             fileToRead.close();
             break;
         }
-        
-        for(size_t _ign=0; _ign<maxThreadCount-1; _ign++) { //thread ID based line skipping.
-            fileToRead.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
-            if(fileToRead.rdstate()==std::ios::eofbit) break;
-            lineCount++;
-        }
+
 
         time_t2 = std::chrono::steady_clock::now();
-        if(std::chrono::duration_cast<std::chrono::milliseconds>(interval_dur=(time_t2-time_t1)).count()>=ms_interval || lineCount>=stop_times_max_lineCount) {
-            size_t delta_lineCount = lineCount-delta_lineCount_t1;
+        if(std::chrono::duration_cast<std::chrono::milliseconds>(interval_dur=(time_t2-time_t1)).count()>=ms_interval || lineCount>=stop_times_max_lineCount/maxThreadCount) {
+            size_t sum_lineCount = 0;
+            std::string printStr_sum_lineCount("thread progresses: {");
+            progr_percent = double(lineCount)/idx_lim.at(0).at(1);
+            *idx_progr.begin() = lineCount;
+            u_lck_cout.lock();
+            for(auto idx_itr=idx_progr.begin(); idx_itr!=idx_progr.end(); ++idx_itr) {
+                sum_lineCount += *idx_itr;
+                printStr_sum_lineCount += Useful::formatNumber(*idx_itr,8,1,"right",false,true) + ",";
+            }
+            printStr_sum_lineCount+="}";
+            // for(size_t cnt=0; cnt<idx_progr.size(); cnt++) sum_lineCount += idx_progr.at(cnt)._a.load();
+            Useful::ANSI_mvprint(0, terminalCursorPos.y+maxThreadCount+3, printStr_sum_lineCount, false);
+            u_lck_cout.unlock();
+            
+            
+            size_t delta_lineCount = sum_lineCount-delta_lineCount_t1;
             double speed = static_cast<double>(delta_lineCount)/std::chrono::duration_cast<std::chrono::seconds>(interval_dur).count();
-            double ETA_seconds = double(stop_times_max_lineCount-lineCount)/speed;
-            std::string _printStr = "curr. lineCount:"+ Useful::formatNumber(lineCount,9,1,"right",false,true)+" / "+Useful::formatNumber(stop_times_max_lineCount,9,3,"right",false,true);
+            double ETA_seconds = double(stop_times_max_lineCount-sum_lineCount)/speed;
+            std::string _printStr = "curr. sum_lineCount:"+ Useful::formatNumber(sum_lineCount,9,1,"right",false,true)+" / "+Useful::formatNumber(stop_times_max_lineCount,9,3,"right",false,true);
             _printStr += " , process rate:"+Useful::formatNumber(speed,5,0)+" p/s , ETA:";
-            double _temp = 0;
-            if(ETA_seconds>3600) {
-                _printStr += std::to_string(int(std::floor(ETA_seconds/3600)))+" hours ";
-                ETA_seconds = std::modf(ETA_seconds/3600, &_temp)*3600;
-            }
-            if(ETA_seconds>60) {
-                _printStr += std::to_string(int(std::floor(ETA_seconds/60)))+" minutes ";
-            }
-            _printStr += std::to_string(int(std::modf(ETA_seconds/60, &_temp)*60)) + " seconds.";
+            
+            _printStr += Useful::formatDuration(std::chrono::duration<double>(ETA_seconds));
+            
+            u_lck_cout.lock();
+            Useful::ANSI_mvprint(50, terminalCursorPos.y+maxThreadCount+3, std::string("delta_lineCount_t1: ")+Useful::formatNumber(delta_lineCount_t1, 5), false);
+            Useful::ANSI_mvprint(
+                31,terminalCursorPos.y+2,
+                Useful::formatNumber(progr_percent*100, 5, 1)+"% | foundIdx_list.size(): "+Useful::formatNumber(ref_refrFoundIdx.size(),8,1,"right",false,true)+" | lineCount: "+Useful::formatNumber(lineCount,8,1,"right",false,true),
+                false
+            );
+            Useful::ANSI_mvprint(0, terminalCursorPos.y+1+maxThreadCount+3, _printStr, false);
+            u_lck_cout.unlock();
 
-            Useful::ANSI_mvprint(terminalCursorPos.x, terminalCursorPos.y, _printStr, false);
 
             time_t1 = time_t2;
-            delta_lineCount_t1 = lineCount;
+            delta_lineCount_t1 = sum_lineCount;
         }
     }
-    terminalCursorPos.y+= 2;
-    terminalCursorPos.x = 0;
-
+    
     fileToRead.close();
     *itr__result_threadTask = true;
     ///--- Main thread task end ---
-
+    
+    u_lck_cout.lock();
+    Useful::ANSI_mvprint(0, terminalCursorPos.y+1+maxThreadCount+5, std::string("finished main thread's process: waiting for other threads"));
+    u_lck_cout.unlock();
     for(size_t i=0; i<threadObjects.size(); i++) {
         if(threadObjects.at(i).joinable()) threadObjects.at(i).join();
     }
+    terminalCursorPos.x = 0;
+    terminalCursorPos.y+= maxThreadCount+7;
     Useful::PrintOut("finished main thread threadTask.",dim_terminal.x+1,"left","\n",true,false,false,1,1,&terminalCursorPos);
+
+    std::chrono::system_clock::time_point times_threadTasks_end = std::chrono::system_clock::now();
+    auto times_threadTasks_end_str = std::chrono::system_clock::to_time_t(times_threadTasks_end);
+    Useful::PrintOut(std::string("Process: threadTask: finished: ")+std::ctime(&times_threadTasks_end_str),std::string::npos,"left","\n",true,false,false,1,1,&terminalCursorPos);
+    std::chrono::duration<double> times_threadTasks_delta = times_threadTasks_end-times_threadTasks_start;
+    Useful::PrintOut(std::string("total duration: ")+Useful::formatDuration(times_threadTasks_delta),std::string::npos,"left","\n",true,false,false,1,1,&terminalCursorPos);
+
+
+    terminalCursorPos.y+= 1;
+    terminalCursorPos.x = 0;
     
     // returVecRef vector cleanup
     bool emptyVectorFound = false;
-    Useful::PrintOut(std::string("Performing vector cleanup. "),dim_terminal.x+1,"left","",true,false,false,1,1,&terminalCursorPos);
+    Useful::PrintOut(std::string("Performing vector cleanup. "),dim_terminal.x+1,"left","\n",true,false,false,1,1,&terminalCursorPos);
     size_t cleanupDiff = returVecRef.size();
 
+    Useful::PrintOut(std::string("refrFoundIdx: "+std::to_string(refrFoundIdx.size())),dim_terminal.x+1,"left","\n",true,false,false,1,1,&terminalCursorPos);
     std::vector<std::vector<std::string>> _tempCopy;
     for(auto itr_threadID=refrFoundIdx.begin(); itr_threadID!=refrFoundIdx.end(); ++itr_threadID) {
         for(auto itr_found=itr_threadID->begin(); itr_found!=itr_threadID->end(); ++itr_found) {
@@ -158,38 +211,55 @@ StopID_refrSorted subProcess_loadFile__stop_times(
             Useful::ANSI_mvprint(terminalCursorPos.x, terminalCursorPos.y, std::string("total found size: ")+std::to_string(_tempCopy.size())+"   ", false);
         }
     }
+    
     returVecRef = _tempCopy;
     cleanupDiff -= returVecRef.size();
+    Useful::ANSI_mvprint(terminalCursorPos.x, terminalCursorPos.y+1, std::string("cleanup diff: ")+std::to_string(cleanupDiff), false);
+    
 
+    terminalCursorPos.y+=2;
+
+    Useful::PrintOut("Performing refrSorted tree fill.",std::string::npos,"left","\n",true,false,false,1,1,&terminalCursorPos);
+
+    Useful::PrintOut("");
     StopID_refrSorted refrRetur;
-    for(size_t i=0; i<returVecRef.size(); i++) {
-        uint32_t _stop_seq = (returVecRef.at(i).at(4).size()>0? std::stoi(returVecRef.at(i).at(4)) : 0);
-        std::string _trip_id = returVecRef.at(i).at(0);
-        std::string _stop_id = returVecRef.at(i).at(3);
-        bool found__stop_seq    = false;
-        bool found__trip_id     = false;
-        for(size_t ii=0; ii<refrRetur.vec.size(); ii++) { //check every stop_seq
-            if(refrRetur.vec.at(ii).stop_sequence == _stop_seq) {
-                found__stop_seq = true;
-                found__trip_id = false;
-                for(size_t iii=0; iii<refrRetur.vec.at(ii).stop_seq_vec.size(); iii++) { //check every trip_id
-                    if(refrRetur.vec.at(ii).stop_seq_vec.at(iii).trip_id==_trip_id) {
-                        found__trip_id = true;
-                        refrRetur.vec.at(ii).stop_seq_vec.at(iii).stop_id = _stop_id;
-
-                        break;
+    try {
+        for(size_t i=0; i<returVecRef.size(); i++) {
+            Useful::ANSI_mvprint(terminalCursorPos.x, terminalCursorPos.y-1, std::string("returVecRef.at(i).size() : ")+Useful::formatNumber(returVecRef.at(i).size(),2));
+            uint32_t _stop_seq = (returVecRef.at(i).at(4).size()>0? std::stoi(returVecRef.at(i).at(4)) : 0);
+            std::string _trip_id = returVecRef.at(i).at(0);
+            std::string _stop_id = returVecRef.at(i).at(3);
+            bool found__stop_seq    = false;
+            bool found__trip_id     = false;
+            for(size_t ii=0; ii<refrRetur.vec.size(); ii++) { //check every stop_seq
+                if(refrRetur.vec.at(ii).stop_sequence == _stop_seq) {
+                    found__stop_seq = true;
+                    found__trip_id = false;
+                    for(size_t iii=0; iii<refrRetur.vec.at(ii).stop_seq_vec.size(); iii++) { //check every trip_id
+                        if(refrRetur.vec.at(ii).stop_seq_vec.at(iii).trip_id==_trip_id) {
+                            found__trip_id = true;
+                            refrRetur.vec.at(ii).stop_seq_vec.at(iii).stop_id = _stop_id;
+    
+                            break;
+                        }
                     }
+                    if(!found__trip_id) {
+                        refrRetur.vec.at(ii).stop_seq_vec.push_back({_trip_id, {_stop_id}});
+                    }
+                    break;
                 }
-                if(!found__trip_id) {
-                    refrRetur.vec.at(ii).stop_seq_vec.push_back({_trip_id, {_stop_id}});
-                }
-                break;
+            }
+            if(!found__stop_seq) {
+                refrRetur.vec.push_back({_stop_seq, {{_trip_id, {_stop_id}}}});
             }
         }
-        if(!found__stop_seq) {
-            refrRetur.vec.push_back({_stop_seq, {{_trip_id, {_stop_id}}}});
-        }
+        
     }
+    catch(const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        exit(1);
+    }
+    
 
 
     terminalCursorPos.y++;
@@ -216,22 +286,24 @@ StopID_refrSorted subProcess_loadFile__stop_times(
 }
 
 
-std::vector<parseException_DebugString> subProcess_processEntries(std::list<std::string> entriesToProcess, StopID_refrSorted& refrTree) {
+std::vector<parseException_DebugString> subProcess_processEntries(
+    std::list<std::string> entriesToProcess,
+    StopID_refrSorted& refrTree,
+    size_t& numTotalTripsRead,
+    size_t& entryPathOpenFailures,
+    std::vector<STU_refd>& storedData_tripDelays_idx
+) {
     Useful::ANSI_mvprint(terminalCursorPos.x, terminalCursorPos.y, "processing entries:");
     terminalCursorPos.y++;
 
     std::string progressBar = "";
-    size_t numTotalTripsRead = 0;
-    size_t entryPathOpenFailures = 0;
-    auto entryPathStr_itr = entriesToProcess.begin();
-    
     std::vector<TrpUpd> storedData;
-    std::vector<STU_refd> storedData_tripDelays_idx;
+    std::vector<parseException_DebugString> vecExceptions_DebugString;
+    
+    auto entryPathStr_itr = entriesToProcess.begin();
 
     Useful::ANSI_mvprint(terminalCursorPos.x, terminalCursorPos.y, "", true);
 
-
-    std::vector<parseException_DebugString> vecExceptions_DebugString;
 
     terminalCursorPos.y+=2;
     for(size_t i=0; i<entriesToProcess.size(); i++) {

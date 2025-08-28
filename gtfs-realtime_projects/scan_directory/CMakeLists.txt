@@ -16,6 +16,8 @@ set(DIR_PROTO_GTFS_REALTIME "C:/Users/berkh/Projects/Github_repo/PublicTransport
 
 
 add_executable(${PROJECT_NAME}
+    src/helper_functions.cpp
+    src/main_subprocess.cpp
     src/main.cpp
     ${DIR_PROTO_GTFS_REALTIME}/gtfs-realtime.pb.cc
 )

@@ -149,8 +149,6 @@ namespace Useful {
     }
 
 
-    
-
     /**
      * @brief Retrieves the current terminal or console window size.
      *
@@ -232,6 +230,7 @@ namespace Useful {
             return "";
         }
     }
+
 
     /**
      * @brief Retrieves the full path of the currently running executable.
@@ -400,6 +399,20 @@ namespace Useful {
         ss.imbue(std::locale(""));
         ss << std::fixed << value;
         return replaceSubstr(ss.str(), ",", formatSymbol);
+    }
+
+    
+    inline std::string formatDuration(std::chrono::duration<double> _duration) {
+        std::stringstream fullString;
+        const auto hrs = std::chrono::duration_cast<std::chrono::hours>(_duration);
+        const auto mins = std::chrono::duration_cast<std::chrono::minutes>(_duration - hrs);
+        const auto secs = std::chrono::duration_cast<std::chrono::seconds>(_duration - hrs - mins);
+        const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(_duration - hrs - mins - secs);
+
+        if(hrs.count()>0)   fullString << hrs.count()   << " hours ";
+        if(mins.count()>0)  fullString << mins.count()  << " minutes ";
+        fullString << secs.count() << "." << ms.count() << " seconds";
+        return fullString.str();
     }
 
     template<class _castType>
@@ -1169,6 +1182,7 @@ namespace Useful {
             formattedString.push_back(rawString);
         }
         
+        if(cursorPos) Useful::ANSI_mvprint(cursorPos->x, cursorPos->y, "", false);
 
         if(flushBeginning) std::cout.flush();
         for(size_t i=0; i<formattedString.size(); i++) {
@@ -1321,9 +1335,7 @@ namespace Useful {
 
         double ETA_seconds = double(total_val-progress)/speed;
         totalStr += " ETA: ";
-        if(ETA_seconds>60) totalStr += std::to_string(int(std::floor(ETA_seconds/60)))+" minutes ";
-        double _temp = 0;
-        totalStr += std::to_string(int(std::modf(ETA_seconds/60, &_temp)*60)) + " seconds.";
+		totalStr += Useful::formatDuration(std::chrono::duration<double>(ETA_seconds));
 
         fullString << totalStr.c_str();
         // if(printBar) printf(" %s\r", totalStr.c_str());
