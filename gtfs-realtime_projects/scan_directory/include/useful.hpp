@@ -344,7 +344,7 @@ namespace Useful {
         size_t size_toSearch= _toSearch.size();
         if(size_toFind==0) throw std::runtime_error("findSubstr(std::string, std::string) arg for _toFind is empty, which is not allowed.");
         else if(size_toSearch==0) throw std::runtime_error("findSubstr(std::string, std::string) arg for _toSearch is empty, which is not allowed.");
-        else if(size_toFind>size_toSearch) throw std::runtime_error("findSubstr(std::string, std::string) string length of _toFind is bigger than _toSearch which is not allowed.");
+        else if(size_toFind>size_toSearch) return std::string::npos; //throw std::runtime_error("findSubstr(std::string, std::string) string length of _toFind is bigger than _toSearch which is not allowed.");
         else if(size_toFind==size_toSearch) return (_toFind==_toSearch? 0 : std::string::npos);
 
         size_t pos = 0;
@@ -401,6 +401,12 @@ namespace Useful {
         return replaceSubstr(ss.str(), ",", formatSymbol);
     }
 
+    inline std::string formatDate(std::chrono::system_clock::time_point _dateVar) {
+        auto tEnd_time = std::chrono::system_clock::to_time_t(_dateVar);
+        char* endTime_text = ctime(&tEnd_time);
+        if (endTime_text[strlen(endTime_text)-1] == '\n') endTime_text[strlen(endTime_text)-1] = '\0';
+        return std::string(endTime_text);
+    }
     
     inline std::string formatDuration(std::chrono::duration<double> _duration) {
         std::stringstream fullString;
@@ -1234,6 +1240,60 @@ namespace Useful {
     } 
 
 
+    inline std::string basicProgressBar(
+        double  _progress,
+        double  _totalProgress,
+        size_t  _funcStatus, // 0-init, 1-running
+        size_t  _barWidth_numChars = 100,
+        double* _speed = nullptr,
+        std::chrono::duration<double>*  _ETA_seconds = nullptr,
+        std::chrono::duration<double>   _update_interval = std::chrono::duration<double>(0.1),
+        size_t  _symbol_ID_progr = 3,
+        std::string _symbol_empty = " "
+    ) {
+        if(_totalProgress==0) throw std::runtime_error("ERROR: basicProgressBar() value for _totalProgress cannot be 0.");
+        if(_barWidth_numChars<1) throw std::runtime_error("ERROR: basicProgressBar() value for _barWidth_numChars cannot be <1.");
+        if(_progress==0) _funcStatus = 0;
+
+        const std::vector<std::string> symb_progr{"■", "⬛", "▉", "▉", "█", "O"};
+        const std::vector<char> intr{'|', '/', '-', '\\'};
+        
+        double scalar = _progress/_totalProgress;
+        
+        static size_t cnt_intr = 0;
+        static double prev_progress = 0;
+        static std::string returBar = "";
+        static std::chrono::system_clock::time_point absTime_start  = std::chrono::system_clock::now();
+        static std::chrono::steady_clock::time_point relTime_prev   = std::chrono::steady_clock::now();
+        
+        if(cnt_intr>=intr.size()) cnt_intr = 0;
+        std::chrono::steady_clock::time_point relTime_curr = std::chrono::steady_clock::now();
+
+        if(_funcStatus==0) {
+            absTime_start   = std::chrono::system_clock::now();
+            relTime_prev    = std::chrono::steady_clock::now();
+        }
+
+        auto interval_dur = std::chrono::duration<double>(relTime_curr-relTime_prev);
+        // Useful::ANSI_mvprint(100, 0, Useful::formatDuration(interval_dur));
+        if(_funcStatus!=0 && interval_dur<_update_interval) return returBar;
+        
+        returBar = "|";
+        for(size_t i=0; i<std::floor(scalar*_barWidth_numChars); i++) returBar += symb_progr.at(_symbol_ID_progr);
+        returBar+= intr.at(cnt_intr);
+        for(size_t i=0; i<std::ceil(((_totalProgress-_progress)/_totalProgress)*(_barWidth_numChars-1)); i++) returBar += _symbol_empty;
+        returBar+= "|";
+
+        double delta_progress = _progress-prev_progress;
+
+        if(_speed) (*_speed) = delta_progress/interval_dur.count();
+        if(_ETA_seconds) (*_ETA_seconds) = std::chrono::duration<double>((_totalProgress-_progress) / (delta_progress/interval_dur.count()));
+
+        cnt_intr++;
+        relTime_prev = relTime_curr;
+        prev_progress = _progress;
+        return returBar;
+    }
     
     /// @brief create a progress bar on terminal
     /// @param progress current progress made
@@ -1280,6 +1340,7 @@ namespace Useful {
         percent = progress/total_val*100;
 
         auto currTime = std::chrono::steady_clock::now();
+        auto currTime_abs = std::chrono::system_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(currTime-prevTime);
         if(!progFin && float(elapsed.count()/float(1'000'000)) < interval) return prev_fullString;
 
@@ -1309,7 +1370,7 @@ namespace Useful {
 
         std::string prog_formatted = FormatWithSymbol(int(progress), "'");
         std::string emptSpac(total_progLen-prog_formatted.length(), ' ');
-        std::string totalStr = " progress: "+emptSpac+prog_formatted+": ";
+        std::string totalStr = " progress: "+emptSpac+prog_formatted+" / "+Useful::formatNumber(FormatWithSymbol(int(total_val), "'"),total_progLen,0)+" : ";
 
         std::string percent_formatted = formatNumber(percent,2);
         std::string emptSpac2(6-percent_formatted.length(), ' ');
@@ -1333,7 +1394,8 @@ namespace Useful {
         std::string emptSpac4(6-speed_formatted.length(), ' ');
         totalStr += emptSpac4+speed_formatted+"pt/s ";
 
-        double ETA_seconds = double(total_val-progress)/speed;
+        // double ETA_seconds = double(total_val-progress)/speed;
+        double ETA_seconds = double(total_val-progress)/(double(progress)/std::chrono::duration<double>(currTime_abs-abs_startTime).count());
         totalStr += " ETA: ";
 		totalStr += Useful::formatDuration(std::chrono::duration<double>(ETA_seconds));
 
@@ -1348,19 +1410,7 @@ namespace Useful {
             fullString << "\nEnd time  : [" << endTime_text << "]\n";
 
             std::chrono::duration<double> elapsedTime = std::chrono::system_clock::now()-abs_startTime;
-
-            const auto hrs = std::chrono::duration_cast<std::chrono::hours>(elapsedTime);
-            const auto mins = std::chrono::duration_cast<std::chrono::minutes>(elapsedTime - hrs);
-            const auto secs = std::chrono::duration_cast<std::chrono::seconds>(elapsedTime - hrs - mins);
-            const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(elapsedTime - hrs - mins - secs);
-            fullString << "elapsed time: ";
-            if(hrs.count()>0)   fullString << hrs.count()   << " hours ";
-            if(mins.count()>0)  fullString << mins.count()  << " minutes ";
-            fullString << secs.count() << "." << ms.count() << " seconds. ";
-            // fullString << "System inactive for (elapsed time) [" << hrs.count() <<
-            // ":" << mins.count() <<
-            // ":" << secs.count() <<
-            // "." << ms.count() << "] [h:min:sec]"<< "\n";
+            fullString << "total elapsed time: " + Useful::formatDuration(elapsedTime);
         }
         
         return fullString.str();

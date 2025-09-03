@@ -5,17 +5,19 @@
 
 #include <includes.hpp>
 
-struct StopID_refrSorted__trip_id {
-    std::string trip_id;
-    std::string stop_id;
-};
-struct StopID_refrSorted__stop_seq {
-    uint32_t stop_sequence;
-    std::vector<StopID_refrSorted__trip_id> stop_seq_vec;
-};
-struct StopID_refrSorted {
-    std::vector<StopID_refrSorted__stop_seq> vec;
-};
+// struct StopID_refrSorted__trip_id {
+//     std::string trip_id;
+//     std::string stop_id;
+// };
+// struct StopID_refrSorted__stop_seq {
+//     uint32_t stop_sequence;
+//     std::vector<StopID_refrSorted__trip_id> stop_seq_vec;
+// };
+// struct StopID_refrSorted {
+//     std::vector<StopID_refrSorted__stop_seq> vec;
+// };
+
+// inline std::unordered_map<uint32_t, std::map<std::string, std::string>> refrTree_StopID;
 
 
 struct STU_refd : public STU {
@@ -55,6 +57,12 @@ inline std::mutex mtx_cout;
 
 /// Whether the number of threads to run is limited from program start. -1 means no limit is to be used.
 inline int setThreadLim = -1;
+
+inline bool use_cleanedStopTimes = false;
+
+/// If this value is false then whenever a multithreaded process is running the data displayed will be using the main thread only as a source.
+inline std::atomic<bool> use_multiThreadDataDisplay{false};
+#define use_multiThreadDataDisplay false
 
 
 #endif //HPP_VARIABLES

@@ -6,17 +6,26 @@
 int main(int argc, char** argv) {
     program_running = true;
 	
+    try {
+        for(size_t i=2; i<argc; i++) {
+            std::string arg_str(argv[i]);
+            
+            size_t argv_foundIdx = 0;
+            if((argv_foundIdx=Useful::findSubstr("-threadLim:", arg_str))!=std::string::npos) {
+                setThreadLim = std::stoul(arg_str.substr(argv_foundIdx+11));
+            }
+            if((argv_foundIdx=Useful::findSubstr("-cleanStopTimes:", arg_str))!=std::string::npos) {
+                use_cleanedStopTimes = std::stoul(arg_str.substr(argv_foundIdx+16));
+            }
+        }
+        
+    }
+    catch(const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        exit(1);
+    }
 	
-	for(size_t i=2; i<argc; i++) {
-		std::string arg_str(argv[i]);
-		
-		
-		size_t idx_setThreadLim = 0;
-		if((idx_setThreadLim=Useful::findSubstr("-threadLim:", arg_str))!=std::string::npos) {
-			setThreadLim = std::stoul(arg_str.substr(idx_setThreadLim+11));
-		}
-	}
-	
+
     GOOGLE_PROTOBUF_VERIFY_VERSION;
     
     dim_terminal = Useful::getTerminalSize();
@@ -82,9 +91,9 @@ int main(int argc, char** argv) {
     func_depthSearch(path_dirToSearch, &filesToSearch, search_depth, &count_searchedDirs);
 
     
-    Useful::PrintOut(std::string("Num [depth level]        : ")+std::to_string(search_depth),dim_terminal.x+1, "left","\n",true,false,false,1,1,&terminalCursorPos);
-    Useful::PrintOut(std::string("Num [searched sub-dir's] : ")+std::to_string(count_searchedDirs),dim_terminal.x+1, "left","\n",true,false,false,1,1,&terminalCursorPos);
-    Useful::PrintOut(std::string("Num [found valid file entries]: ")+std::to_string(filesToSearch.size()),dim_terminal.x+1, "left","\n",true,false,false,1,1,&terminalCursorPos);
+    Useful::PrintOut(std::string("Num [depth level]        : ")+std::to_string(search_depth),dim_terminal.x, "left","\n",true,false,false,1,1,&terminalCursorPos);
+    Useful::PrintOut(std::string("Num [searched sub-dir's] : ")+std::to_string(count_searchedDirs),dim_terminal.x, "left","\n",true,false,false,1,1,&terminalCursorPos);
+    Useful::PrintOut(std::string("Num [found valid file entries]: ")+std::to_string(filesToSearch.size()),dim_terminal.x, "left","\n",true,false,false,1,1,&terminalCursorPos);
     if(filesToSearch.size()==0) {
         Useful::PrintOut("found no entries. closing program..");
         program_running = false;
@@ -94,14 +103,22 @@ int main(int argc, char** argv) {
 
     ///-------------------------------------------------------------
     
-    terminalCursorPos.y+=3;
+    terminalCursorPos.y+=1;
 
     
     size_t numTotalTripsRead = 0;
     size_t entryPathOpenFailures = 0;
     std::vector<STU_refd> storedData_tripDelays_idx;
-
-    std::vector<parseException_DebugString> vecExceptions_DebugString = subProcess_processEntries(filesToSearch, refrTree, numTotalTripsRead, entryPathOpenFailures, storedData_tripDelays_idx);
+    std::vector<parseException_DebugString> vecExceptions_DebugString;
+    try {
+        vecExceptions_DebugString = subProcess_processEntries(filesToSearch, refrTree, numTotalTripsRead, entryPathOpenFailures, storedData_tripDelays_idx);
+        
+    }
+    catch(const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        exit(1);
+    }
+    
 
     
     Useful::PrintOut("finished processing every entry.",dim_terminal.x+1, "left","\n",true,false,false,1,1,&terminalCursorPos);
