@@ -149,41 +149,41 @@ inline bool subTask__StopTimesFile_stopID_search(std::unordered_map<uint32_t, st
     return false;
 }
 
+
 inline void threadTask_parseDelaysFromEntry(
     size_t threadID,
     std::list<std::string> _entryFilenames,
     std::vector<size_t> idx_lim,
     std::unordered_map<uint32_t, std::map<std::string, std::string>> refrTree,
-    std::vector<parseException_DebugString>& retur_caughtExcepts,
-    std::vector<TrpUpd>& retur_storedData_tripupds,
-    std::vector<STU_refd>& retur_storedData_tripdelays,
-    size_t& retur_numTotalTripsRead
+    std::list<parseException_DebugString>* retur_caughtExcepts,
+    std::list<TrpUpd>* retur_storedData_tripupds,
+    std::list<STU_refd>* retur_storedData_tripdelays,
+    size_t* retur_numTotalTripsRead
 ) {
-    size_t strLen_totMaxEntries = Useful::formatNumber(idx_lim.at(1),0,0,"right",false,true).length();
+    std::list<TrpUpd> storedData_tripUpds;
+    std::list<STU_refd> storedData_tripDelays;
+    std::list<parseException_DebugString> vecExceptions_DebugString;
 
     std::unique_lock<std::mutex> u_lck_cout(mtx_cout, std::defer_lock);
     u_lck_cout.lock();
-    Useful::ANSI_mvprint(4,terminalCursorPos.y+threadID+1,Useful::formatNumber(threadID, 2)+" : ["+Useful::formatNumber(idx_lim.at(0), 9,1,"right",false,true)+":"+Useful::formatNumber(idx_lim.at(0)+idx_lim.at(1), 9,1,"right",false,true)+"] : ");
+    Useful::ANSI_mvprint(42,terminalCursorPos.y+threadID+1,std::string("init thread: ")+Useful::formatNumber(threadID)+" | 2");
     u_lck_cout.unlock();
 
-    std::vector<TrpUpd> storedData_tripUpds;
-    std::vector<STU_refd> storedData_tripDelays;
-    std::vector<parseException_DebugString> vecExceptions_DebugString;
-    
-    auto entryPathStr_itr = _entryFilenames.begin();
+    size_t exceptCatch_processID = 0;
 
     try {
-        
-        std::advance(entryPathStr_itr, idx_lim.at(0));
-    }
-    catch(const std::exception& e) {
+        size_t strLen_totMaxEntries = Useful::formatNumber(idx_lim.at(1),0,0,"right",false,true).length();
+
         u_lck_cout.lock();
-        Useful::ANSI_mvprint(4,terminalCursorPos.y+threadID+2,e.what());
+        Useful::ANSI_mvprint(
+            4, terminalCursorPos.y+threadID+1,
+            Useful::formatNumber(threadID, 2)+" : ["+Useful::formatNumber(idx_lim.at(0), 9,1,"right",false,true)+":"+Useful::formatNumber(idx_lim.at(0)+idx_lim.at(1), 9,1,"right",false,true)+"] : "
+        );
         u_lck_cout.unlock();
-        return;
-    }
-    
-    try {
+        
+        auto entryPathStr_itr = _entryFilenames.begin();
+
+        std::advance(entryPathStr_itr, idx_lim.at(0));
         
         for(size_t i=0; i<idx_lim.at(1); i++) {
             std::fstream entryFile(*entryPathStr_itr, std::ios::in |std::ios::binary);
@@ -210,12 +210,14 @@ inline void threadTask_parseDelaysFromEntry(
             }
             
             size_t i_upd = 0;
-            size_t exceptCatch_processID = 0;
+            exceptCatch_processID = 0;
             try {
                 for(; i_upd<trpUpdate.stop_time_update_size(); i_upd++) {
 
                     exceptCatch_processID = 0;
-                    storedData_tripUpds.push_back(ParseDebugString(trpUpdate.stop_time_update(i_upd).DebugString()));
+                    std::string __tempToParse = trpUpdate.stop_time_update(i_upd).DebugString();
+                    TrpUpd parsedStrVar = ParseDebugString(__tempToParse);
+                    storedData_tripUpds.push_back(parsedStrVar);
 
                     exceptCatch_processID = 1;
                     auto tempTrp = storedData_tripUpds.back();
@@ -258,6 +260,9 @@ inline void threadTask_parseDelaysFromEntry(
                 }
             } catch(const std::exception& e) {
                 vecExceptions_DebugString.push_back({e.what(), std::string("\"file:'")+entry_filename+"'\",\"i_upd:"+std::to_string(i_upd)+"\",\"exceptCatch_processID:"+std::to_string(exceptCatch_processID)+"\""});
+                u_lck_cout.lock();
+                Useful::ANSI_mvprint(60, terminalCursorPos.y+threadID+1, e.what());
+                u_lck_cout.unlock();
             }
 
             //---------- process end   ----------
@@ -267,20 +272,23 @@ inline void threadTask_parseDelaysFromEntry(
             trpUpdate.Clear();
 
             u_lck_cout.lock();
+            std::string str_vecExcepts = std::string("num vecExceptions: ")+std::to_string(vecExceptions_DebugString.size());
+            if(vecExceptions_DebugString.size()>0) str_vecExcepts += "\n - latest:"+vecExceptions_DebugString.back().what + " , where: " + vecExceptions_DebugString.back().where;
             Useful::ANSI_mvprint(29+4,terminalCursorPos.y+threadID+1, Useful::formatNumber(i,strLen_totMaxEntries,0,"right",false,true)+"/"+Useful::formatNumber(idx_lim.at(1),strLen_totMaxEntries,0,"right",false,true));
             u_lck_cout.unlock();
         }
     }
     catch(const std::exception& e) {
         u_lck_cout.lock();
-        Useful::ANSI_mvprint(0, terminalCursorPos.y+3, e.what());
+        Useful::ANSI_mvprint(60, terminalCursorPos.y+threadID+1, e.what());
         u_lck_cout.unlock();
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
     
 
-    retur_caughtExcepts.swap(vecExceptions_DebugString);
-    retur_storedData_tripupds.swap(storedData_tripUpds);
-    retur_storedData_tripdelays.swap(storedData_tripDelays);
+    retur_caughtExcepts->swap(vecExceptions_DebugString);
+    retur_storedData_tripupds->swap(storedData_tripUpds);
+    retur_storedData_tripdelays->swap(storedData_tripDelays);
 }
 
 
