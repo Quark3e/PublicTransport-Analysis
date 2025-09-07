@@ -2,16 +2,8 @@
 #ifndef HPP__LIB_lazyimgui
 #define HPP__LIB_lazyimgui
 
-// #include "lazyimgui_includes.hpp"
+#include "lazyimgui_includes.hpp"
 
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_primitives.h>
-
-#include <imgui.h>
-#include <imgui_stdlib.h>
-#include <imgui_impl_allegro5.h>
-
-#include <iostream>
 
 #include "Pos2d.hpp"
 
