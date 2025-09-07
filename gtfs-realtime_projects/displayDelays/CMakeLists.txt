@@ -12,12 +12,10 @@ find_package(protobuf   CONFIG REQUIRED)
 
 set(DIR_REPO_ROOT "${CMAKE_SOURCE_DIR}/../..")
 set(DIR_REPO_LIBS "${DIR_REPO_ROOT}/lib")
-set(DIR_PROTO_GTFS_REALTIME "C:/Users/berkh/Projects/Github_repo/PublicTransport-Analysis/protobuf_files/gtfs-realtime/build/gen")
 
 
 add_executable(${PROJECT_NAME}
     src/main.cpp
-    ${DIR_PROTO_GTFS_REALTIME}/gtfs-realtime.pb.cc
 )
 
 if (MSVC)
@@ -29,7 +27,6 @@ else()
 endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/include")
-target_include_directories(${PROJECT_NAME} PRIVATE ${DIR_PROTO_GTFS_REALTIME})
 target_include_directories(${PROJECT_NAME} PRIVATE "${DIR_REPO_LIBS}/Pos2d/include")
 target_include_directories(${PROJECT_NAME} PRIVATE "${DIR_REPO_LIBS}/GTFS-RT__TripUpdate_DebugString_parser/include")
 
