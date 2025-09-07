@@ -5,10 +5,9 @@ project(displayDelays_gtfs_proj)
 
 set(CMAKE_CXX_STANDARD 17)
 
-
-find_package(utf8cpp    CONFIG REQUIRED)
-find_package(fmt        CONFIG REQUIRED)
-find_package(protobuf   CONFIG REQUIRED)
+# find_package(implot     CONFIG REQUIRED)
+find_package(Allegro    CONFIG REQUIRED)
+find_package(lazyimgui  CONFIG REQUIRED)
 
 set(DIR_REPO_ROOT "${CMAKE_SOURCE_DIR}/../..")
 set(DIR_REPO_LIBS "${DIR_REPO_ROOT}/lib")
@@ -18,18 +17,10 @@ add_executable(${PROJECT_NAME}
     src/main.cpp
 )
 
-if (MSVC)
-    # warning level 4
-    add_compile_options(/utf-8)
-else()
-    # additional warnings
-    add_compile_options(-Wutf-8)
-endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/include")
 target_include_directories(${PROJECT_NAME} PRIVATE "${DIR_REPO_LIBS}/Pos2d/include")
 target_include_directories(${PROJECT_NAME} PRIVATE "${DIR_REPO_LIBS}/GTFS-RT__TripUpdate_DebugString_parser/include")
 
-target_link_libraries(${PROJECT_NAME} PRIVATE utf8::cpp utf8cpp::utf8cpp)
-target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
-target_link_libraries(${PROJECT_NAME} PRIVATE protobuf::libprotoc protobuf::libprotobuf protobuf::libprotobuf-lite)
+target_link_libraries(${PROJECT_NAME} PUBLIC lazyimgui::lazyimgui)
+target_link_libraries(${PROJECT_NAME} PRIVATE Allegro::allegro Allegro::allegro_ttf Allegro::allegro_font Allegro::allegro_main)
