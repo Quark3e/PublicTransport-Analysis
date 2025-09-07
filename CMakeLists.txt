@@ -1,9 +1,27 @@
 cmake_minimum_required(VERSION 3.14)
+
+# if(WIN32)
+#     set(BOOL_USE_VCPKG true)
+    
+# else()
+    set(BOOL_USE_VCPKG false)
+# endif()
+
+if(${BOOL_USE_VCPKG})
+    set(CMAKE_TOOLCHAIN_FILE "C:/Users/berkh/Libraries/vcpkg/scripts/buildsystems/vcpkg.cmake")
+endif()
 project(lazyimgui VERSION 1.0.0 LANGUAGES CXX)
+
+message(STATUS "--- BOOL_USE_VCPKG=${BOOL_USE_VCPKG}")
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+if(${BOOL_USE_VCPKG})
+    find_package(imgui      CONFIG REQUIRED)
+    find_package(Allegro    CONFIG REQUIRED)
+endif()
 
 # Create library target
 add_library(lazyimgui)
@@ -12,47 +30,51 @@ add_library(lazyimgui)
 target_sources(lazyimgui
     PRIVATE
         src/lazyimgui.cpp
-        # ImGui core
-        lib/imgui/imgui.cpp
-        lib/imgui/imgui_draw.cpp
-        lib/imgui/imgui_tables.cpp
-        lib/imgui/imgui_widgets.cpp
-        lib/imgui/misc/cpp/imgui_stdlib.cpp
-        # ImGui Allegro backend
-        lib/imgui/backends/imgui_impl_allegro5.cpp
-        # Date chooser addon
-        lib/imgui/addons/imguidatechooser/imguidatechooser.cpp
 )
-
-
-# set(DIR__INCLUDES   "include")
-# set(DIR__SOURCES    "src")
-# set(DIR__LIBRARIES  "lib")
-
-# set(DIR__LIB_INCLUDES
-#     "${CMAKE_CURRENT_SOURCE_DIR}/${DIR__LIBRARIES}/imgui" 
-#     "${CMAKE_CURRENT_SOURCE_DIR}/${DIR__LIBRARIES}/imgui/backends" 
-#     "${CMAKE_CURRENT_SOURCE_DIR}/${DIR__LIBRARIES}/imgui/misc/cpp" 
-#     "${CMAKE_CURRENT_SOURCE_DIR}/${DIR__LIBRARIES}/Pos2d/include" 
-# )
-
-# file(GLOB FILES__LIB_SOURCES__IMGUI CONFIGURE_DEPENDS "${DIR__LIBRARIES}/imgui/imgui*.cpp")
-# list(APPEND FILES__LIB_SOURCES__IMGUI "${DIR__LIBRARIES}/imgui/backends/imgui_impl_allegro5.cpp")
-# list(APPEND FILES__LIB_SOURCES__IMGUI "${DIR__LIBRARIES}/imgui/addons/imguidatechooser/imguidatechooser.cpp")
-# list(APPEND FILES__LIB_SOURCES__IMGUI "${DIR__LIBRARIES}/imgui/misc/cpp/imgui_stdlib.cpp")
-
-
-# Add include directories (PUBLIC for downstream projects)
 target_include_directories(lazyimgui
     PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/imgui>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/imgui/misc/cpp>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/imgui/backends>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/addons/imguidatechooser>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/Pos2d/include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
+
+
+if(${BOOL_USE_VCPKG})
+    target_link_libraries(lazyimgui
+        PUBLIC
+            imgui::imgui
+            Allegro::allegro Allegro::allegro_ttf Allegro::allegro_font Allegro::allegro_main
+    )
+    target_link_directories(lazyimgui
+        PRIVATE
+            imgui::imgui
+            Allegro::allegro Allegro::allegro_ttf Allegro::allegro_font Allegro::allegro_main
+    )
+else()
+    target_sources(lazyimgui
+        PRIVATE
+            # ImGui core
+            lib/imgui/imgui.cpp
+            lib/imgui/imgui_draw.cpp
+            lib/imgui/imgui_tables.cpp
+            lib/imgui/imgui_widgets.cpp
+            lib/imgui/misc/cpp/imgui_stdlib.cpp
+            # ImGui Allegro backend
+            lib/imgui/backends/imgui_impl_allegro5.cpp
+            # # Date chooser addon
+            # lib/imgui/addons/imguidatechooser/imguidatechooser.cpp
+    )
+    
+    # Add include directories (PUBLIC for downstream projects)
+    target_include_directories(lazyimgui
+        PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/imgui>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/imgui/misc/cpp>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/imgui/backends>
+            # $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/addons/imguidatechooser>
+    )
+endif()
+
 
 # Set public headers for installation
 set_target_properties(lazyimgui PROPERTIES
@@ -62,30 +84,34 @@ set_target_properties(lazyimgui PROPERTIES
 # Install all header files from include/
 install(DIRECTORY include/ DESTINATION include)
 
-# Install ImGui headers
-install(DIRECTORY lib/imgui/ DESTINATION include
-    FILES_MATCHING PATTERN "*.h"
-)
-
-# Install ImGui backend headers
-install(DIRECTORY lib/imgui/misc/cpp/ DESTINATION include
-    FILES_MATCHING PATTERN "*.h"
-)
-
-# Install ImGui backend headers
-install(DIRECTORY lib/imgui/backends/ DESTINATION include
-    FILES_MATCHING PATTERN "*.h"
-)
-
-# Install DateChooser headers
-install(DIRECTORY lib/imgui/addons/imguidatechooser/ DESTINATION include
-    FILES_MATCHING PATTERN "*.h"
-)
-
 # Install Pos2d header (header-only library)
 install(DIRECTORY lib/Pos2d/include/ DESTINATION include
     FILES_MATCHING PATTERN "*.hpp"
 )
+
+
+if(NOT ${BOOL_USE_VCPKG})
+    # Install ImGui headers
+    install(DIRECTORY lib/imgui/ DESTINATION include
+        FILES_MATCHING PATTERN "*.h"
+    )
+
+    # Install ImGui backend headers
+    install(DIRECTORY lib/imgui/misc/cpp/ DESTINATION include
+        FILES_MATCHING PATTERN "*.h"
+    )
+
+    # Install ImGui backend headers
+    install(DIRECTORY lib/imgui/backends/ DESTINATION include
+        FILES_MATCHING PATTERN "*.h"
+    )
+
+    # # Install DateChooser headers
+    # install(DIRECTORY lib/imgui/addons/imguidatechooser/ DESTINATION include
+    #     FILES_MATCHING PATTERN "*.h"
+    # )
+endif()
+
 
 # Install targets
 install(TARGETS lazyimgui
