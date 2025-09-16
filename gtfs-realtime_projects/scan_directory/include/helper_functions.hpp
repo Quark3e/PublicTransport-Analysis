@@ -21,6 +21,8 @@ void func_depthSearch(std::string _dirPath, std::list<std::string> *_storeResult
 
 int64_t parse_epochTime_fromFilename(std::string _toParse);
 
+std::string parse_date_fromFilename(std::string _toParse, struct tm* tmPtr = nullptr);
+
 template <typename T>
 struct atomwrapper
 {

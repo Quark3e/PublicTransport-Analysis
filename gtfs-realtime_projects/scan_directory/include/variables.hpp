@@ -58,7 +58,7 @@ inline std::mutex mtx_cout;
 /// Whether the number of threads to run is limited from program start. -1 means no limit is to be used.
 inline int setThreadLim = -1;
 
-inline bool use_cleanedStopTimes = false;
+inline bool use_cleanedStopTimes = true;
 
 /// If this value is false then whenever a multithreaded process is running the data displayed will be using the main thread only as a source.
 inline std::atomic<bool> use_multiThreadDataDisplay{false};

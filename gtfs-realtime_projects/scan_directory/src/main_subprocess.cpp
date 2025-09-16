@@ -439,7 +439,6 @@ std::vector<parseException_DebugString> subProcess_processEntries(
     std::unique_lock<std::mutex> u_lck_cout(mtx_cout, std::defer_lock);
 
     /// Starting sub-threads
-    
     std::vector<std::thread> threadObjects;
     for(size_t id_thread=1; id_thread<maxThreadCount; id_thread++) {
         u_lck_cout.lock();
@@ -456,7 +455,7 @@ std::vector<parseException_DebugString> subProcess_processEntries(
         Useful::ANSI_mvprint(42,terminalCursorPos.y+id_thread+1,std::string("init thread: ")+Useful::formatNumber(id_thread)+" | 1");
         u_lck_cout.unlock();
 
-        threadObjects.emplace_back([&] {
+        threadObjects.emplace_back([&, id_thread, itr_refRet_caughtExcepts, itr_refRet_tripUpdates, itr_refRet_tripDelays, itr_refRet_numTotalTripsRead] {
             threadTask_parseDelaysFromEntry(
                 id_thread,
                 entriesToProcess,
@@ -633,28 +632,41 @@ std::vector<parseException_DebugString> subProcess_processEntries(
         read_numSTU += i_upd;
         //---------- process end   ----------
 
-
-        progressBarStr.at(1) = Useful::formatNumber(read_numSTU, strLen_totMaxSTUs,1,"right",false,true)+"/"+Useful::formatNumber(tot_numSTU, strLen_totMaxSTUs,1,"right",false,true);
-        progressBarStr.at(2) = Useful::basicProgressBar(read_numSTU,tot_numSTU,1,100,&progressBar_speed,&progressBar_ETA,std::chrono::duration<double>(1));
-        // progressBarStr.at(2) = Useful::basicProgressBar(i,idx_lim.at(0).at(1),1,100,&progressBar_speed,&progressBar_ETA,std::chrono::duration<double>(1));
-        progressBarStr.at(3) = "rate: "+Useful::formatNumber(progressBar_speed,8,2,"right",false,true)+" S.T.U./sec";
-        progressBarStr.at(4) = "ETA: "+Useful::formatDuration(progressBar_ETA);
+        try {
+            progressBarStr.at(1) = Useful::formatNumber(read_numSTU, strLen_totMaxSTUs,1,"right",false,true)+"/"+Useful::formatNumber(tot_numSTU, strLen_totMaxSTUs,1,"right",false,true);
+            progressBarStr.at(2) = Useful::basicProgressBar(read_numSTU,tot_numSTU/maxThreadCount,1,100,&progressBar_speed,&progressBar_ETA,std::chrono::duration<double>(1));
+            // progressBarStr.at(2) = Useful::basicProgressBar(i,idx_lim.at(0).at(1),1,100,&progressBar_speed,&progressBar_ETA,std::chrono::duration<double>(1));
+            progressBarStr.at(3) = "rate: "+Useful::formatNumber(progressBar_speed,8,2,"right",false,true)+" S.T.U./sec";
+            progressBarStr.at(4) = "ETA: "+Useful::formatDuration(progressBar_ETA);
+        }
+        catch(const std::exception& e) {
+            std::cerr << e.what() << '\n';
+        }
+        
 
         u_lck_cout.lock();
-        Useful::ANSI_mvprint(terminalCursorPos.x, terminalCursorPos.y+maxThreadCount+3, std::string("num successfully added delay: ")+std::to_string(itr_refRet_tripDelays->size()), false);
-        std::string str_vecExcepts = std::string("num vecExceptions: ")+std::to_string(itr_refRet_caughtExcepts->size());
-        if(itr_refRet_caughtExcepts->size()>0) str_vecExcepts += "\n - latest:"+itr_refRet_caughtExcepts->back().what + " , where: " + itr_refRet_caughtExcepts->back().where;
-        Useful::ANSI_mvprint(terminalCursorPos.x, terminalCursorPos.y+maxThreadCount+4, str_vecExcepts+"     ", false);
-
-        // progressBar = Useful::progressBar(i, idx_lim.at(0).at(1));
-        Useful::ANSI_mvprint(0, terminalCursorPos.y+maxThreadCount+5, progressBarStr.at(0),false);
-        Useful::ANSI_mvprint(5, terminalCursorPos.y+maxThreadCount+6, progressBarStr.at(1),false);
-
-        Useful::ANSI_mvprint(strLen_totMaxSTUs*2+14, terminalCursorPos.y+maxThreadCount+6, "", false);
-        fmt::print(progressBarStr.at(2));
-
-        Useful::ANSI_mvprint(progressBarStr.at(1).size()+10+104, terminalCursorPos.y+maxThreadCount+6, progressBarStr.at(3),false);
-        Useful::ANSI_mvprint(0, terminalCursorPos.y+maxThreadCount+7, progressBarStr.at(4),false);
+        try {
+            Useful::ANSI_mvprint(terminalCursorPos.x, terminalCursorPos.y+maxThreadCount+3, std::string("num successfully added delay: ")+std::to_string(itr_refRet_tripDelays->size()), false);
+            std::string str_vecExcepts = std::string("num vecExceptions: ")+std::to_string(itr_refRet_caughtExcepts->size());
+            if(itr_refRet_caughtExcepts->size()>0) str_vecExcepts += "\n - latest:"+itr_refRet_caughtExcepts->back().what + " , where: " + itr_refRet_caughtExcepts->back().where;
+            Useful::ANSI_mvprint(terminalCursorPos.x, terminalCursorPos.y+maxThreadCount+4, str_vecExcepts+"     ", false);
+    
+            // progressBar = Useful::progressBar(i, idx_lim.at(0).at(1));
+            Useful::ANSI_mvprint(0, terminalCursorPos.y+maxThreadCount+5, progressBarStr.at(0),false);
+            Useful::ANSI_mvprint(5, terminalCursorPos.y+maxThreadCount+6, progressBarStr.at(1),false);
+    
+            Useful::ANSI_mvprint(progressBarStr.at(1).size()+6, terminalCursorPos.y+maxThreadCount+6, "", false);
+            fmt::print(progressBarStr.at(2));
+    
+            Useful::ANSI_mvprint(progressBarStr.at(1).size()+10+110, terminalCursorPos.y+maxThreadCount+6, progressBarStr.at(3),false);
+            Useful::ANSI_mvprint(0, terminalCursorPos.y+maxThreadCount+7, Useful::formatNumber(progressBarStr.at(4),50,0,"left"),false);
+            
+            Useful::ANSI_mvprint(progressBarStr.at(4).size(), terminalCursorPos.y+maxThreadCount+7, std::string(50-progressBarStr.at(4).size(), ' '), false);
+        }
+        catch(const std::exception& e) {
+            std::cerr << e.what() << '\n';
+        }
+        
         u_lck_cout.unlock();
 
         std::advance(entryPathStr_itr, 1);
@@ -663,9 +675,12 @@ std::vector<parseException_DebugString> subProcess_processEntries(
         trpUpdate.Clear();
 
         perfObj_entryParsing.set_T_end("Total entry process duration").multiplier+=1;
+        std::string printStr_memLeft="";
+        printStr_memLeft += Useful::formatNumber(Useful::HumanReadable{Useful::getTotalAvailMemory()},  3+1+2+2, 1);
+        printStr_memLeft += " / ";
+        printStr_memLeft += Useful::formatNumber(Useful::HumanReadable{Useful::getTotalSystemMemory()}, 3+1+2+2, 1);
+
         std::string printStr_perfObj="";
-
-
         for(size_t perfIdx=0; perfIdx<perfObj_entryParsing.size(); perfIdx++) {
             auto& perfObj_el = perfObj_entryParsing[perfIdx];
             double el_delay = std::chrono::duration<double, std::milli>(perfObj_entryParsing.get_avgDuration(perfIdx)).count();
@@ -678,42 +693,90 @@ std::vector<parseException_DebugString> subProcess_processEntries(
         u_lck_cout.lock();
         Useful::ANSI_mvprint(29+4,terminalCursorPos.y+1, Useful::formatNumber(i,strLen_totMaxEntries,0,"right",false,true)+"/"+Useful::formatNumber(idx_lim.at(0).at(1),strLen_totMaxEntries,0,"right",false,true));
         Useful::ANSI_mvprint(0, terminalCursorPos.y+maxThreadCount+9, printStr_perfObj);
+        Useful::ANSI_mvprint(55, terminalCursorPos.y+maxThreadCount+7, printStr_memLeft);
         u_lck_cout.unlock();
         perfObj_entryParsing.set_T_start("Total entry process duration");
 
     }
-    terminalCursorPos.y += 9 + perfObj_entryParsing.size();
+    // terminalCursorPos.y += 9 + perfObj_entryParsing.size();
 
     /// ---------- main thread task end   ---------- 
 
-    u_lck_cout.lock();
-    Useful::ANSI_mvprint(0, terminalCursorPos.y+maxThreadCount+1+13, std::string("finished main thread's process: waiting for other threads"));
-    u_lck_cout.unlock();
-    for(size_t i=0; i<threadObjects.size(); i++) {
-        if(threadObjects.at(i).joinable()) threadObjects.at(i).join();
+    if(maxThreadCount>1) {
+        u_lck_cout.lock();
+        Useful::ANSI_mvprint(0, terminalCursorPos.y+maxThreadCount+1+13, std::string("finished main thread's process: waiting for other threads"));
+        u_lck_cout.unlock();
+        for(size_t i=0; i<threadObjects.size(); i++) {
+            if(threadObjects.at(i).joinable()) threadObjects.at(i).join();
+        }
     }
+    else if(threadObjects.size()>0) throw std::runtime_error("threadObjects.size()>0 && maxThreadCount==0");
+    
 
     terminalCursorPos.x = 0;
     terminalCursorPos.y += maxThreadCount+15;
 
+    Useful::PrintOut("Saving individual thread's saved data into collective container.",std::string::npos,"left"," ",true,false,false,1,1,&terminalCursorPos);
+
     std::vector<parseException_DebugString> vecExceptions_DebugString;
-    std::vector<TrpUpd> storedData_tripUpdates;
+    // std::vector<TrpUpd> storedData_tripUpdates;
     storedData_tripDelays_idx.clear();
     numTotalTripsRead = 0;
-   
-    for(size_t id_thread=0; id_thread<maxThreadCount; id_thread++) {
-        for(auto itr_temp : *itr_refRet_caughtExcepts) vecExceptions_DebugString.push_back(itr_temp);
-        std::advance(itr_refRet_caughtExcepts, 1);
-        
-        for(auto itr_temp : *itr_refRet_tripDelays) storedData_tripDelays_idx.push_back(itr_temp);
-        std::advance(itr_refRet_tripDelays, 1);
-        
-        for(auto itr_temp : *itr_refRet_tripUpdates) storedData_tripUpdates.push_back(itr_temp);
-        std::advance(itr_refRet_tripUpdates, 1);
-        
-        numTotalTripsRead += *itr_refRet_numTotalTripsRead;
-        std::advance(itr_refRet_numTotalTripsRead, 1);
+
+    Useful::PrintOut("   -saving refReturned_tripDelays    : ",std::string::npos,"left"," ",true,false,false,1,1,&terminalCursorPos);
+    for(auto itr_refRet : refReturned_tripDelays) {
+        for(auto itr_temp : itr_refRet) {
+            storedData_tripDelays_idx.push_back(itr_temp);
+            
+            std::string printStr_memLeft="";
+            printStr_memLeft += Useful::formatNumber(Useful::HumanReadable{Useful::getTotalAvailMemory()}, 10, 1);
+            printStr_memLeft += " / ";
+            printStr_memLeft += Useful::formatNumber(Useful::HumanReadable{Useful::getTotalSystemMemory()}, 10, 1);
+
+            Useful::ANSI_mvprint(terminalCursorPos.x, terminalCursorPos.y, printStr_memLeft);
+        }
     }
+    terminalCursorPos.x = 0;
+    terminalCursorPos.y+= 1;
+    Useful::PrintOut("   -saving vecExceptions_DebugString : ",std::string::npos,"left"," ",true,false,false,1,1,&terminalCursorPos);
+    for(auto itr_refRet : refReturned_caughtExcepts) {
+        for(auto itr_temp : itr_refRet) {
+            vecExceptions_DebugString.push_back(itr_temp);
+            
+            std::string printStr_memLeft="";
+            printStr_memLeft += Useful::formatNumber(Useful::HumanReadable{Useful::getTotalAvailMemory()}, 10, 1);
+            printStr_memLeft += " / ";
+            printStr_memLeft += Useful::formatNumber(Useful::HumanReadable{Useful::getTotalSystemMemory()}, 10, 1);
+
+            Useful::ANSI_mvprint(terminalCursorPos.x, terminalCursorPos.y, printStr_memLeft);
+        }
+    }
+    terminalCursorPos.x = 0;
+    terminalCursorPos.y+= 1;
+    for(auto itr_temp : refReturned_numTotalTripsRead) {
+        numTotalTripsRead += itr_temp;
+    }
+
+    for(size_t id_thread=0; id_thread<maxThreadCount; id_thread++) {
+        // Useful::ANSI_mvprint(dim_terminal.y-15, terminalCursorPos.y, std::string(" {check:[ 2:0"));
+
+        // Useful::ANSI_mvprint(dim_terminal.y-15, terminalCursorPos.y, std::string(" {check:[ 2:0"));
+        // for(auto itr_temp : *itr_refRet_caughtExcepts) vecExceptions_DebugString.push_back(itr_temp);
+        // std::advance(itr_refRet_caughtExcepts, 1);
+        
+        // Useful::ANSI_mvprint(dim_terminal.y-15, terminalCursorPos.y, std::string(" {check:[ 2:1"));
+        // for(auto itr_temp : *itr_refRet_tripDelays) storedData_tripDelays_idx.push_back(itr_temp);
+        // std::advance(itr_refRet_tripDelays, 1);
+        
+        // Useful::ANSI_mvprint(dim_terminal.y-15, terminalCursorPos.y, std::string(" {check:[ 2:2"));
+        // for(auto itr_temp : *itr_refRet_tripUpdates) storedData_tripUpdates.push_back(itr_temp);
+        // std::advance(itr_refRet_tripUpdates, 1);
+
+        // Useful::ANSI_mvprint(dim_terminal.y-15, terminalCursorPos.y, std::string(" {check:[ 2:3"));
+        // numTotalTripsRead += *itr_refRet_numTotalTripsRead;
+        // std::advance(itr_refRet_numTotalTripsRead, 1);
+    }
+    // Useful::ANSI_mvprint(dim_terminal.y-15, terminalCursorPos.y, " {check:[ 3]} ");
 
     Useful::PrintOut("Finished processing entries.", std::string::npos,"left","\n",true,false,false,1,1,&terminalCursorPos);
     Useful::PrintOut(std::string("Total time: ")+Useful::formatDuration(std::chrono::system_clock::now()-progressBar_startDate), std::string::npos,"left","\n",true,false,false,1,1,&terminalCursorPos);

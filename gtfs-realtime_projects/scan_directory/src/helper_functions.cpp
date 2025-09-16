@@ -54,3 +54,28 @@ int64_t parse_epochTime_fromFilename(std::string _toParse) {
     return (epoch_time = mktime(&tm_time));
 }
 
+
+std::string parse_date_fromFilename(std::string _toParse, struct tm* tmPtr) {
+    // "sl-TripUpdates-2025-01-23"
+
+    std::string parsedDate = "";
+
+    size_t pos = Useful::findSubstr("sl-TripUpdates-", _toParse);
+    if(pos==std::string::npos) return "---";
+    _toParse.erase(0, pos+15);
+
+    parsedDate = _toParse;
+
+    if(tmPtr) {
+        struct tm tmStrct{};
+        tmStrct.tm_year = std::stoi(_toParse.substr(0, 4)) - 1900;
+        _toParse.erase(0, 5);
+        tmStrct.tm_mon  = std::stoi(_toParse.substr(0, 2)) - 1;
+        _toParse.erase(0, 3);
+        tmStrct.tm_mday = std::stoi(_toParse);
+        (*tmPtr) = tmStrct;
+    }
+    
+    return parsedDate;
+}
+

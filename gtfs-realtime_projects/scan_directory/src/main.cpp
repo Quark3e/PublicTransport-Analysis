@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    int search_depth = 1;
+    int search_depth = 5;
 
 
     Useful::PrintOut("loading file_static_refData__trips vector with trip values which's route_id matched..", std::string::npos, "left", "",true,false,false,1,1,&terminalCursorPos);
@@ -90,6 +90,7 @@ int main(int argc, char** argv) {
     size_t count_searchedDirs = 0;
     func_depthSearch(path_dirToSearch, &filesToSearch, search_depth, &count_searchedDirs);
 
+    std::string ScannedDateString = parse_date_fromFilename(path_dirToSearch);
     
     Useful::PrintOut(std::string("Num [depth level]        : ")+std::to_string(search_depth),dim_terminal.x, "left","\n",true,false,false,1,1,&terminalCursorPos);
     Useful::PrintOut(std::string("Num [searched sub-dir's] : ")+std::to_string(count_searchedDirs),dim_terminal.x, "left","\n",true,false,false,1,1,&terminalCursorPos);
@@ -115,41 +116,41 @@ int main(int argc, char** argv) {
         
     }
     catch(const std::exception& e) {
-        std::cerr << e.what() << '\n';
-        exit(1);
+        Useful::ANSI_mvprint(terminalCursorPos.x, dim_terminal.x-std::string(e.what()).size()-1, std::string("except.[")+std::string(e.what())+"]");
     }
     
+    Useful::PrintOut("Finished subProcess_processEntries() call.",dim_terminal.x, "left","\n",true,false,false,1,1,&terminalCursorPos);
 
-    
-    Useful::PrintOut("finished processing every entry.",dim_terminal.x+1, "left","\n",true,false,false,1,1,&terminalCursorPos);
-
-    std::ofstream file__vecExceptions_DebugString("dataFile__vecExceptions_DebugString.csv");
-    if(file__vecExceptions_DebugString.is_open()) {
-        for(auto el : vecExceptions_DebugString) {
-            file__vecExceptions_DebugString << "\""<< el.what << "\"," << el.where << "\n";
+    Useful::PrintOut(" displaying vecExceptions:",dim_terminal.x, "left","\n",true,false,false,1,1,&terminalCursorPos);
+    try {
+        std::ofstream file__vecExceptions_DebugString("dataFile__vecExceptions_DebugString.csv");
+        if(file__vecExceptions_DebugString.is_open()) {
+            for(auto el : vecExceptions_DebugString) {
+                file__vecExceptions_DebugString << "\""<< el.what << "\"," << el.where << "\n";
+            }
+            file__vecExceptions_DebugString.close();
         }
-        file__vecExceptions_DebugString.close();
     }
-
-    std::string progressBar = Useful::progressBar(filesToSearch.size(), filesToSearch.size(), true, true);
-    Useful::ANSI_mvprint(terminalCursorPos.x, terminalCursorPos.y+=5, "", false);
-    fmt::print(progressBar);
+    catch(const std::exception& e) {
+        Useful::ANSI_mvprint(terminalCursorPos.x, dim_terminal.x-std::string(e.what()).size()-1, std::string("except.[")+std::string(e.what())+"]");
+    }
     
     Useful::ANSI_mvprint(terminalCursorPos.x, terminalCursorPos.y+=5, "");
-    Useful::PrintOut("finished processing every entry.",dim_terminal.x+1, "left","\n",true,false,false,1,1,&terminalCursorPos);
-    Useful::PrintOut("Num [entryPathOpenFailures]       : "+std::to_string(entryPathOpenFailures),dim_terminal.x+1, "left","\n",true,false,false,1,1,&terminalCursorPos);
-    Useful::PrintOut("Num [vecExceptions_DebugString]   : "+std::to_string(vecExceptions_DebugString.size()),dim_terminal.x+1, "left","\n",true,false,false,1,1,&terminalCursorPos);
+    Useful::PrintOut("finished processing every entry.",dim_terminal.x, "left","\n",true,false,false,1,1,&terminalCursorPos);
+    Useful::PrintOut("Num [entryPathOpenFailures]       : "+std::to_string(entryPathOpenFailures),dim_terminal.x, "left","\n",true,false,false,1,1,&terminalCursorPos);
+    Useful::PrintOut("Num [vecExceptions_DebugString]   : "+std::to_string(vecExceptions_DebugString.size()),dim_terminal.x, "left","\n",true,false,false,1,1,&terminalCursorPos);
     
-    std::fstream file_foundDelays(std::string("dataFile_foundDelays_")+std::to_string(storedData_tripDelays_idx.size())+".csv", std::ios::out);
+    Useful::PrintOut("Saving found trip_delays into csv file:",dim_terminal.x, "left","\n",true,false,false,1,1,&terminalCursorPos);
+    std::fstream file_foundDelays(std::string("dataFile_foundDelays_")+ScannedDateString+"_"+std::to_string(storedData_tripDelays_idx.size())+".csv", std::ios::out);
     file_foundDelays << "filename_epoch,trip_id,STU_idx,stop_sequence,stop_id,delay_arrival,delay_departure\n";
     for(size_t i=0; i<storedData_tripDelays_idx.size(); i++) {
         auto refd = storedData_tripDelays_idx.at(i);
         file_foundDelays << refd.filename_epoch << "," << refd.trip_id << "," << refd.STU_idx << "," << refd.stop_sequence << "," << refd.stop_id << "," << refd.arrival.delay << "," << refd.departure.delay << "\n";
     }
     file_foundDelays.close();
-    Useful::PrintOut(std::string("Num delays found: ")+std::to_string(storedData_tripDelays_idx.size())+" out of "+std::to_string(numTotalTripsRead)+" total trips.",dim_terminal.x+1, "left","\n",true,false,false,1,1,&terminalCursorPos);
+    Useful::PrintOut(std::string("Num delays found: ")+std::to_string(storedData_tripDelays_idx.size())+" out of "+std::to_string(numTotalTripsRead)+" total trips.",dim_terminal.x, "left","\n",true,false,false,1,1,&terminalCursorPos);
 
-    Useful::PrintOut("\n\nFinished program. Closing.",dim_terminal.x+1, "left","\n",true,false,false,1,1,&terminalCursorPos);
+    Useful::PrintOut("\n\nFinished program. Closing.",dim_terminal.x, "left","\n",true,false,false,1,1,&terminalCursorPos);
     
     google::protobuf::ShutdownProtobufLibrary();
     std::cout << std::endl;
