@@ -1,9 +1,0 @@
-{
-  "dependencies": [
-    "fmt",
-    "imgui",
-    "implot",
-    "protobuf",
-    "utfcpp"
-  ]
-}

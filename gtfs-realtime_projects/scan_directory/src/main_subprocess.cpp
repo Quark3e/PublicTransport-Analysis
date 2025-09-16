@@ -516,6 +516,7 @@ std::vector<parseException_DebugString> subProcess_processEntries(
         "tripToSearch_check",
         "StopTimesFile_stopID_search"
     }};
+    ThrdPrf::ThreadPerf perfObj_ParseDebugString(1000, {});
     
     perfObj_entryParsing.set_T_start("Total entry process duration");
     // terminalCursorPos.y+=2;
@@ -562,7 +563,7 @@ std::vector<parseException_DebugString> subProcess_processEntries(
 
                 std::string __temp_toParse = trpUpdate.stop_time_update(i_upd).DebugString();
                 assert(perfObj_entryParsing.set_T_start("ParseDebugString")>=0);
-                TrpUpd parsedStrVar = ParseDebugString(__temp_toParse);
+                TrpUpd parsedStrVar = ParseDebugString(__temp_toParse, &perfObj_ParseDebugString);
                 exceptCatch_processID = 0;
                 perfObj_entryParsing.set_T_end("ParseDebugString").multiplier+=1;
                 itr_refRet_tripUpdates->push_back(parsedStrVar);
@@ -681,16 +682,33 @@ std::vector<parseException_DebugString> subProcess_processEntries(
         printStr_memLeft += Useful::formatNumber(Useful::HumanReadable{Useful::getTotalSystemMemory()}, 3+1+2+2, 1);
 
         std::string printStr_perfObj="";
+        size_t maxStrLength__printStr_perfObj = 0;
         for(size_t perfIdx=0; perfIdx<perfObj_entryParsing.size(); perfIdx++) {
             auto& perfObj_el = perfObj_entryParsing[perfIdx];
             double el_delay = std::chrono::duration<double, std::milli>(perfObj_entryParsing.get_avgDuration(perfIdx)).count();
-            printStr_perfObj += Useful::formatNumber(perfObj_el.label, 30,0,"left") + " : " + (
+            std::string tempPrintStr = Useful::formatNumber(perfObj_el.label, 30,0,"left") + " : " + (
+                perfObj_el.durations.size()==0? 
+                "0.000" : Useful::formatNumber(el_delay*perfObj_el.multiplier,8,2) //  std::chrono::duration<double, std::milli>
+            ) +" ms | "+Useful::formatNumber(perfObj_el.multiplier, 6, 0, "right", false, true)+" | "+ Useful::formatNumber(el_delay,8,2,"right",false,true);
+            if(tempPrintStr.size() > maxStrLength__printStr_perfObj) maxStrLength__printStr_perfObj = tempPrintStr.size();
+            printStr_perfObj += tempPrintStr += "\n";
+            perfObj_el.multiplier = 0;
+        }
+
+        u_lck_cout.lock();
+        // std::string printStr_perfObj_ParseDebugString = "";
+        for(size_t perfIdx=0; perfIdx<perfObj_ParseDebugString.size(); perfIdx++) {
+            auto& perfObj_el = perfObj_ParseDebugString[perfIdx];
+            double el_delay = std::chrono::duration<double, std::milli>(perfObj_entryParsing.get_avgDuration(perfIdx)).count();
+            std::string tempPrintStr = Useful::formatNumber(perfObj_el.label, 30,0,"left") + " : " + (
                 perfObj_el.durations.size()==0? 
                 "0.000" : Useful::formatNumber(el_delay*perfObj_el.multiplier,8,2) //  std::chrono::duration<double, std::milli>
             ) +" ms | "+Useful::formatNumber(perfObj_el.multiplier, 6, 0, "right", false, true)+" | "+ Useful::formatNumber(el_delay,8,2,"right",false,true) +"\n";
+
+            Useful::ANSI_mvprint(maxStrLength__printStr_perfObj+1, terminalCursorPos.y+maxThreadCount+9+perfIdx, std::string(" | ")+tempPrintStr);
             perfObj_el.multiplier = 0;
         }
-        u_lck_cout.lock();
+        
         Useful::ANSI_mvprint(29+4,terminalCursorPos.y+1, Useful::formatNumber(i,strLen_totMaxEntries,0,"right",false,true)+"/"+Useful::formatNumber(idx_lim.at(0).at(1),strLen_totMaxEntries,0,"right",false,true));
         Useful::ANSI_mvprint(0, terminalCursorPos.y+maxThreadCount+9, printStr_perfObj);
         Useful::ANSI_mvprint(55, terminalCursorPos.y+maxThreadCount+7, printStr_memLeft);

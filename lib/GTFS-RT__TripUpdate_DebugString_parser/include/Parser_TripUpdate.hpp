@@ -17,7 +17,7 @@ struct STU {
     uint32_t stop_sequence; // [1]
     STE arrival;    // [2]
     STE departure;  // [3]
-    std::string stop_id;    // [4]
+    std::string stop_id;    // [4]  
     int32_t schedule_relationship;  // [5]
 };
 struct TrpDsc {
