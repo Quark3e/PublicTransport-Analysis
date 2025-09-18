@@ -228,41 +228,6 @@ namespace ThrdPrf {
 #ifndef HPP_LIB_PARSER_TRIPUPDATE
 #define HPP_LIB_PARSER_TRIPUPDATE
 
-#include <stdexcept>
-
-#include <string>
-#include <vector>
-
-
-struct STE {
-    int32_t delay;  // [1]
-    int64_t time;   // [2]
-    // int32_t uncertainty;     // [3] // uncertainty is avoided because it appears that data point isnt consistent
-};
-struct STU {
-    uint32_t stop_sequence; // [1]
-    STE arrival;    // [2]
-    STE departure;  // [3]
-    std::string stop_id;    // [4]
-    int32_t schedule_relationship;  // [5]
-};
-struct TrpDsc {
-    std::string trip_id;    // [1]
-    std::string start_time; // [2]
-    std::string start_date; // [3]
-    int32_t schedule_relationship;  // [4]
-    std::string route_id; // [5]
-    uint32_t direction_id; // [6]
-};
-struct Vhcl {
-    std::string id;
-};
-struct TrpUpd {
-    uint64_t            timestamp{0};
-    TrpDsc              trip{"", "", 0};
-    std::vector<STU>    stop_time_updates;
-    Vhcl                vehicle{""};
-};
 
 inline size_t _findSubstr(std::string _toFind, std::string _toSearch) {
     size_t size_toFind  = _toFind.size();

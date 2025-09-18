@@ -214,7 +214,7 @@ std::unordered_map<uint32_t, std::map<std::string, std::string>> subProcess_load
         Useful::formatNumber(progr_percent*100, 5, 1)+"% | foundIdx_list.size(): "+Useful::formatNumber(ref_refrFoundIdx.size(),8,1,"right",false,true)+" | lineCount: "+Useful::formatNumber(idx_lim.at(0).at(1),8,1,"right",false,true),
         false
     );
-    Useful::ANSI_mvprint(0, terminalCursorPos.y+1+maxThreadCount+5, std::string("finished main thread's process: waiting for other threads"));
+    Useful::ANSI_mvprint(0, terminalCursorPos.y+1+maxThreadCount+2, std::string("finished main thread's process: waiting for other threads"));
     u_lck_cout.unlock();
     for(size_t i=0; i<threadObjects.size(); i++) {
         if(threadObjects.at(i).joinable()) threadObjects.at(i).join();
@@ -516,7 +516,7 @@ std::vector<parseException_DebugString> subProcess_processEntries(
         "tripToSearch_check",
         "StopTimesFile_stopID_search"
     }};
-    ThrdPrf::ThreadPerf perfObj_ParseDebugString(1000, {});
+    ThrdPrf::ThreadPerf perfObj_ParseDebugString(1000);
     
     perfObj_entryParsing.set_T_start("Total entry process duration");
     // terminalCursorPos.y+=2;
@@ -563,7 +563,7 @@ std::vector<parseException_DebugString> subProcess_processEntries(
 
                 std::string __temp_toParse = trpUpdate.stop_time_update(i_upd).DebugString();
                 assert(perfObj_entryParsing.set_T_start("ParseDebugString")>=0);
-                TrpUpd parsedStrVar = ParseDebugString(__temp_toParse, &perfObj_ParseDebugString);
+                TrpUpd parsedStrVar = ParseDebugString(__temp_toParse/*, &perfObj_ParseDebugString*/);
                 exceptCatch_processID = 0;
                 perfObj_entryParsing.set_T_end("ParseDebugString").multiplier+=1;
                 itr_refRet_tripUpdates->push_back(parsedStrVar);
@@ -662,7 +662,7 @@ std::vector<parseException_DebugString> subProcess_processEntries(
             Useful::ANSI_mvprint(progressBarStr.at(1).size()+10+110, terminalCursorPos.y+maxThreadCount+6, progressBarStr.at(3),false);
             Useful::ANSI_mvprint(0, terminalCursorPos.y+maxThreadCount+7, Useful::formatNumber(progressBarStr.at(4),50,0,"left"),false);
             
-            Useful::ANSI_mvprint(progressBarStr.at(4).size(), terminalCursorPos.y+maxThreadCount+7, std::string(50-progressBarStr.at(4).size(), ' '), false);
+            Useful::ANSI_mvprint(progressBarStr.at(4).size()+1, terminalCursorPos.y+maxThreadCount+7, std::string(50-progressBarStr.at(4).size(), ' '), false);
         }
         catch(const std::exception& e) {
             std::cerr << e.what() << '\n';
@@ -677,9 +677,9 @@ std::vector<parseException_DebugString> subProcess_processEntries(
 
         perfObj_entryParsing.set_T_end("Total entry process duration").multiplier+=1;
         std::string printStr_memLeft="";
-        printStr_memLeft += Useful::formatNumber(Useful::HumanReadable{Useful::getTotalAvailMemory()},  3+1+2+2, 1);
+        printStr_memLeft += Useful::formatNumber(Useful::HumanReadable{Useful::getTotalAvailMemory()},  3+1+3+2, 2);
         printStr_memLeft += " / ";
-        printStr_memLeft += Useful::formatNumber(Useful::HumanReadable{Useful::getTotalSystemMemory()}, 3+1+2+2, 1);
+        printStr_memLeft += Useful::formatNumber(Useful::HumanReadable{Useful::getTotalSystemMemory()}, 3+1+3+2, 2);
 
         std::string printStr_perfObj="";
         size_t maxStrLength__printStr_perfObj = 0;
@@ -697,17 +697,17 @@ std::vector<parseException_DebugString> subProcess_processEntries(
 
         u_lck_cout.lock();
         // std::string printStr_perfObj_ParseDebugString = "";
-        for(size_t perfIdx=0; perfIdx<perfObj_ParseDebugString.size(); perfIdx++) {
-            auto& perfObj_el = perfObj_ParseDebugString[perfIdx];
-            double el_delay = std::chrono::duration<double, std::milli>(perfObj_entryParsing.get_avgDuration(perfIdx)).count();
-            std::string tempPrintStr = Useful::formatNumber(perfObj_el.label, 30,0,"left") + " : " + (
-                perfObj_el.durations.size()==0? 
-                "0.000" : Useful::formatNumber(el_delay*perfObj_el.multiplier,8,2) //  std::chrono::duration<double, std::milli>
-            ) +" ms | "+Useful::formatNumber(perfObj_el.multiplier, 6, 0, "right", false, true)+" | "+ Useful::formatNumber(el_delay,8,2,"right",false,true) +"\n";
+        // for(size_t perfIdx=0; perfIdx<perfObj_ParseDebugString.size(); perfIdx++) {
+        //     auto& perfObj_el = perfObj_ParseDebugString[perfIdx];
+        //     double el_delay = std::chrono::duration<double, std::milli>(perfObj_entryParsing.get_avgDuration(perfIdx)).count();
+        //     std::string tempPrintStr = Useful::formatNumber(perfObj_el.label, 30,0,"left") + " : " + (
+        //         perfObj_el.durations.size()==0? 
+        //         "0.000" : Useful::formatNumber(el_delay*perfObj_el.multiplier,8,2) //  std::chrono::duration<double, std::milli>
+        //     ) +" ms | "+Useful::formatNumber(perfObj_el.multiplier, 6, 0, "right", false, true)+" | "+ Useful::formatNumber(el_delay,8,2,"right",false,true) +"\n";
 
-            Useful::ANSI_mvprint(maxStrLength__printStr_perfObj+1, terminalCursorPos.y+maxThreadCount+9+perfIdx, std::string(" | ")+tempPrintStr);
-            perfObj_el.multiplier = 0;
-        }
+        //     Useful::ANSI_mvprint(maxStrLength__printStr_perfObj+1, terminalCursorPos.y+maxThreadCount+9+perfIdx, std::string(" || | || ")+tempPrintStr);
+        //     perfObj_el.multiplier = 0;
+        // }
         
         Useful::ANSI_mvprint(29+4,terminalCursorPos.y+1, Useful::formatNumber(i,strLen_totMaxEntries,0,"right",false,true)+"/"+Useful::formatNumber(idx_lim.at(0).at(1),strLen_totMaxEntries,0,"right",false,true));
         Useful::ANSI_mvprint(0, terminalCursorPos.y+maxThreadCount+9, printStr_perfObj);
@@ -722,7 +722,7 @@ std::vector<parseException_DebugString> subProcess_processEntries(
 
     if(maxThreadCount>1) {
         u_lck_cout.lock();
-        Useful::ANSI_mvprint(0, terminalCursorPos.y+maxThreadCount+1+13, std::string("finished main thread's process: waiting for other threads"));
+        Useful::ANSI_mvprint(0, terminalCursorPos.y+maxThreadCount+1+14, std::string("finished main thread's process: waiting for other threads"));
         u_lck_cout.unlock();
         for(size_t i=0; i<threadObjects.size(); i++) {
             if(threadObjects.at(i).joinable()) threadObjects.at(i).join();
@@ -734,7 +734,7 @@ std::vector<parseException_DebugString> subProcess_processEntries(
     terminalCursorPos.x = 0;
     terminalCursorPos.y += maxThreadCount+15;
 
-    Useful::PrintOut("Saving individual thread's saved data into collective container.",std::string::npos,"left"," ",true,false,false,1,1,&terminalCursorPos);
+    Useful::PrintOut("Saving individual thread's saved data into collective container.",std::string::npos,"left","\n",true,false,false,1,1,&terminalCursorPos);
 
     std::vector<parseException_DebugString> vecExceptions_DebugString;
     // std::vector<TrpUpd> storedData_tripUpdates;

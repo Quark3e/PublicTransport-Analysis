@@ -135,7 +135,7 @@ int main(int argc, char** argv) {
         Useful::ANSI_mvprint(terminalCursorPos.x, dim_terminal.x-std::string(e.what()).size()-1, std::string("except.[")+std::string(e.what())+"]");
     }
     
-    Useful::ANSI_mvprint(terminalCursorPos.x, terminalCursorPos.y+=5, "");
+    // Useful::ANSI_mvprint(terminalCursorPos.x, terminalCursorPos.y+=5, "");
     Useful::PrintOut("finished processing every entry.",dim_terminal.x, "left","\n",true,false,false,1,1,&terminalCursorPos);
     Useful::PrintOut("Num [entryPathOpenFailures]       : "+std::to_string(entryPathOpenFailures),dim_terminal.x, "left","\n",true,false,false,1,1,&terminalCursorPos);
     Useful::PrintOut("Num [vecExceptions_DebugString]   : "+std::to_string(vecExceptions_DebugString.size()),dim_terminal.x, "left","\n",true,false,false,1,1,&terminalCursorPos);
