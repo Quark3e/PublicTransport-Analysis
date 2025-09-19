@@ -28,6 +28,7 @@
 #endif
 
 #include <filesystem>
+#include <cstring>
 
 
 #ifndef _max
