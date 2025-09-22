@@ -18,12 +18,12 @@ public:
 
     }
     bit7z_callbackClass(const bit7z_callbackClass& _other):
-        total(_other.total), progress(_other.progress), speed(_other.speed), time_0(_other.time_0), ETA_sec(_other.ETA_sec)
+        DG_refObj(_other.DG_refObj), total(_other.total), progress(_other.progress), speed(_other.speed), time_0(_other.time_0), ETA_sec(_other.ETA_sec)
     {
 
     }
     bit7z_callbackClass(bit7z_callbackClass&& _other):
-        total(_other.total), progress(_other.progress), speed(_other.speed), time_0(_other.time_0), ETA_sec(_other.ETA_sec)
+        DG_refObj(_other.DG_refObj), total(_other.total), progress(_other.progress), speed(_other.speed), time_0(_other.time_0), ETA_sec(_other.ETA_sec)
     {
 
     }
@@ -61,7 +61,7 @@ public:
         if(interval.count()==0) return true;
 
         this->speed = delta/interval.count();
-        this->ETA_sec = (this->total - _processed_size) / this->speed;
+        this->ETA_sec = std::chrono::duration<double>((this->total - _processed_size) / this->speed);
 
         std::unique_lock<std::mutex> u_lck(DG_refObj.mtx_access__progressInfo, std::defer_lock);
         
@@ -223,7 +223,7 @@ void DGNC::threadFunc(DGNC::DataGatherer& DG_ref) {
             try {
 
                 bit7z::Bit7zLibrary lib{"C:\\Program Files\\7-Zip\\7z.dll"};
-                bit7z::BitFileExtractor extractor{lib, BitFormat::SevenZip};
+                bit7z::BitFileExtractor extractor{lib, bit7z::BitFormat::SevenZip};
 
                 bit7z_callbackClass callbackClass(DG_ref);
 

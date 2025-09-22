@@ -13,6 +13,8 @@
 #include <filesystem>
 
 #include <Pos2d.hpp>
+#include <bit7z/bitfileextractor.hpp>
+
 
 #include <CURL_GET_downloader.hpp>
 #include <PTDA_Variables.hpp>
