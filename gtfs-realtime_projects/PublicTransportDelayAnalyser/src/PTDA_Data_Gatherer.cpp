@@ -219,7 +219,7 @@ void DGNC::threadFunc(DGNC::DataGatherer& DG_ref) {
                 using namespace bit7z;
 
                 Bit7zLibrary lib{"C:\\Program Files\\7-Zip\\7z.dll"};
-                BitFileExtractor extractor{lib, Bitformat::SevenZip};
+                BitFileExtractor extractor{lib, BitFormat::SevenZip};
 
                 bit7z_callbackClass callbackClass(DG_ref);
 
