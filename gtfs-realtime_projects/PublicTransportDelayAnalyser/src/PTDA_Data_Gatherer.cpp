@@ -2,6 +2,90 @@
 #include <PTDA_Data_Gatherer.hpp>
 
 
+class bit7z_callbackClass {
+private:
+    uint64_t    total;
+    uint64_t    progress;
+    double      speed;
+    std::chrono::steady_clock::time_point time_0;
+    std::chrono::duration<double> ETA_sec;
+
+    DGNC::DataGatherer& DG_refObj;
+public:
+    bit7z_callbackClass(DGNC::DataGatherer& _DG_refObj):
+        DG_refObj(_DG_refObj), total(0), progress(0), speed(0), time_0(std::chrono::steady_clock::now()), ETA_sec(std::chrono::duration<double>(0))
+    {
+
+    }
+    bit7z_callbackClass(const bit7z_callbackClass& _other):
+        total(_other.total), progress(_other.progress), speed(_other.speed), time_0(_other.time_0), ETA_sec(_other.ETA_sec)
+    {
+
+    }
+    bit7z_callbackClass(bit7z_callbackClass&& _other):
+        total(_other.total), progress(_other.progress), speed(_other.speed), time_0(_other.time_0), ETA_sec(_other.ETA_sec)
+    {
+
+    }
+    ~bit7z_callbackClass() {}
+    bit7z_callbackClass& operator=(const bit7z_callbackClass& _other) {
+        this->total     = _other.total;
+        this->progress  = _other.progress;
+        this->speed     = _other.speed;
+        this->time_0    = _other.time_0;
+        this->ETA_sec   = _other.ETA_sec;
+
+    }
+    bit7z_callbackClass& operator=(bit7z_callbackClass&& _other) {
+        this->total     = _other.total;
+        this->progress  = _other.progress;
+        this->speed     = _other.speed;
+        this->time_0    = _other.time_0;
+        this->ETA_sec   = _other.ETA_sec;
+
+    }
+
+
+    void callback_total(uint64_t _total_size) {
+        this->total = _total_size;
+    }
+    bool callback_progress(uint64_t _processed_size) {
+        auto time_1 = std::chrono::steady_clock::now();
+        auto delta = _processed_size - this->progress;
+        std::chrono::duration<double> interval = time_1 - this->time_0;
+        if(interval.count()==0) return true;
+
+        this->speed = delta/interval.count();
+        this->ETA_sec = (this->total - _processed_size) / this->speed;
+
+        std::unique_lock<std::mutex> u_lck(DG_refObj.mtx_access__progressInfo, std::defer_lock);
+        
+        u_lck.lock();
+        std::string tempStr = DG_refObj.progressInfo.message.str();
+        size_t dumpIdx = std::string::npos;
+        for(size_t i=tempStr.size()-2; i>=0; i--) {
+            if(tempStr.at(i)=='\n') {
+                dumpIdx = i;
+                break;
+            }
+        }
+
+        DG_refObj.progressInfo.progress.update(_processed_size, this->total);
+        // progressInfo.message.clear();
+        DG_refObj.progressInfo.message.str(tempStr.substr(0, dumpIdx));
+
+        DG_refObj.progressInfo.message << std::this_thread::get_id() << " | [bit7z] Decompression progress: " << Useful::formatNumber(progressInfo.progress.percent,5,1) << "% ";
+        DG_refObj.progressInfo.message << "(" << Useful::formatNumber(DG_refObj.progressInfo.progress.now,strLen_total,0,"right",false,true) << "/" << (progressInfo.progress.total,strLen_total,0,"right",false,true) <<" bytes)\n";
+    
+        u_lck.unlock();
+
+        this->time_0 = time_1;
+        this->progress = _processed_size;
+        return true;
+    }
+};
+
+
 int DGNC::DataGatherer::threadFunc__callbackDownloadProgress(void* clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow) {
     if(dltotal > 0) {
         size_t strLen_total = Useful::formatNumber(dltotal, 0, 0, "right", false, true).size();
@@ -54,7 +138,10 @@ void DGNC::threadFunc(DGNC::DataGatherer& DG_ref) {
             ss << std::put_time(&temp_tm, "%y-%m-&d");
             u_lck_accss__url_components.lock();
             DG_ref.url_components["date"] = ss.str();
-            std::string zipFilename = DG_ref.url_components["operator"]+"-"+DG_ref.url_components["feed"]+"-"+DG_ref.url_components["date"]+".7z";
+            std::string zipFilename     = DG_ref.url_components["operator"]+"-"+DG_ref.url_components["feed"]+"-"+DG_ref.url_components["date"]+".7z";
+            u_lck_accss__path_dirTempCompressed.lock();
+            std::string zipFilename_fullPath= DG_ref.path_dirTempCompressed+(DG_ref.path_dirTempCompressed.back()=='/'? "" : "/")+zipFilename;
+            u_lck_accss__path_dirTempCompressed.unlock();
 
             u_lck_accss__progressInfo.lock();
             DG_ref.progressInfo.message.clear();
@@ -90,9 +177,9 @@ void DGNC::threadFunc(DGNC::DataGatherer& DG_ref) {
                 
                 u_lck_accss__path_dirTempCompressed.lock();
                 u_lck_accss__progressInfo.lock();
-                DG_ref.progressInfo.message << threadID << " | " << "GET request of url: \"" << url << "\"\n";
+                DG_ref.progressInfo.message << threadID << " | GET request of url: \"" << url << "\"\n";
                 u_lck_accss__progressInfo.unlock();
-                if(client.downloadFile(url, DG_ref.path_dirTempCompressed+(DG_ref.path_dirTempCompressed.back()=='/'? "" : "/")+zipFilename)) {
+                if(client.downloadFile(url, zipFilename_fullPath)) {
                     if(std::filesystem::exists(DG_ref.path_dirTempCompressed)) {
                         DG_ref.progressInfo.message << CGd::verboseStream.rdbuf();
                         auto fileSize = std::filesystem::file_size(DG_ref.path_dirTempCompressed);
@@ -117,7 +204,7 @@ void DGNC::threadFunc(DGNC::DataGatherer& DG_ref) {
             }
             catch(const std::exception& e) {
                 u_lck_accss__progressInfo.lock();
-                DG_ref.progressInfo.message << threadID << " | " << "EXCEPTION: " << e.what() << "\n";
+                DG_ref.progressInfo.message << threadID << " | EXCEPTION: " << e.what() << "\n";
                 u_lck_accss__callback_errors.lock();
                 if(DG_ref.callback_errors) DG_ref.callback_errors(DG_ref.progressInfo);
                 u_lck_accss__callback_errors.unlock();
@@ -128,7 +215,36 @@ void DGNC::threadFunc(DGNC::DataGatherer& DG_ref) {
 
             /// ---------- Uncompressing downloaded raw data files ----------
 
+            try {
+                using namespace bit7z;
+
+                Bit7zLibrary lib{"C:\\Program Files\\7-Zip\\7z.dll"};
+                BitFileExtractor extractor{lib, Bitformat::SevenZip};
+
+                bit7z_callbackClass callbackClass(DG_ref);
+
+                // extractor.setTotalCallback(callbackClass.callback_total);
+                // extractor.setProgressCallback(callbackClass.callback_progress);
+                // extractor.setTotalCallback(bit7z_callbackClass::callback_total(&DG_ref));
+                // extractor.setProgressCallback(bit7z_callbackClass::callback_progress(&DG_ref));
+                extractor.setTotalCallback([DG_ref](uint64_t var) {DG_ref.callback_total(var);});
+                extractor.setProgressCallback([DG_ref](uint64_t var) {DG_ref.callback_progress(var)});
+
+                u_lck_accss__path_dirTempCompressed.lock();
+                extractor.extract(zipFilename_fullPath, DG_ref.path_dirTempCompressed);
+                u_lck_accss__path_dirTempCompressed.unlock();
+            }
+            catch(const bit7z::BitException& ex) {
+                u_lck_accss__progressInfo.lock();
+                DG_ref.progressInfo.message << threadID << " | BitException: " << ex.what() << "\n";
+                u_lck_accss__callback_errors.lock();
+                if(DG_ref.callback_errors) DG_ref.callback_errors(DG_ref.progressInfo);
+                u_lck_accss__callback_errors.unlock();
+                u_lck_accss__progressInfo.unlock();
+            }
             
+            /// ---------- "Processing"/parsing the raw data files ----------
+
 
         }
 
