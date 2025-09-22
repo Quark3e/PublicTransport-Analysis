@@ -140,8 +140,12 @@ int main(int argc, char** argv) {
     Useful::PrintOut("Num [entryPathOpenFailures]       : "+std::to_string(entryPathOpenFailures),dim_terminal.x, "left","\n",true,false,false,1,1,&terminalCursorPos);
     Useful::PrintOut("Num [vecExceptions_DebugString]   : "+std::to_string(vecExceptions_DebugString.size()),dim_terminal.x, "left","\n",true,false,false,1,1,&terminalCursorPos);
     
-    Useful::PrintOut("Saving found trip_delays into csv file:",dim_terminal.x, "left","\n",true,false,false,1,1,&terminalCursorPos);
+    Useful::PrintOut("Saving found trip_delays into csv file:\""+std::string("dataFile_foundDelays_")+ScannedDateString+"_"+std::to_string(storedData_tripDelays_idx.size())+".csv\"",dim_terminal.x, "left","\n",true,false,false,1,1,&terminalCursorPos);
     std::fstream file_foundDelays(std::string("dataFile_foundDelays_")+ScannedDateString+"_"+std::to_string(storedData_tripDelays_idx.size())+".csv", std::ios::out);
+    if(!file_foundDelays.is_open()) {
+        std::cerr << "\nfailed to open savefile.\n";
+        return 1;
+    }
     file_foundDelays << "filename_epoch,trip_id,STU_idx,stop_sequence,stop_id,delay_arrival,delay_departure\n";
     for(size_t i=0; i<storedData_tripDelays_idx.size(); i++) {
         auto refd = storedData_tripDelays_idx.at(i);

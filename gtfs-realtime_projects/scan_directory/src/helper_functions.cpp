@@ -64,7 +64,7 @@ std::string parse_date_fromFilename(std::string _toParse, struct tm* tmPtr) {
     if(pos==std::string::npos) return "---";
     _toParse.erase(0, pos+15);
 
-    parsedDate = _toParse;
+    parsedDate = _toParse.substr(0, 10);
 
     if(tmPtr) {
         struct tm tmStrct{};
