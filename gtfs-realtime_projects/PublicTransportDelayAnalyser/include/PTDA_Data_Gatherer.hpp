@@ -22,6 +22,8 @@
 using funcType_updateCallback = void(*)(PTDA_Coms&);
 // typedef void(*funcType_updateCallback)(PTDA_Coms*);
 
+class bit7z_callbackClass;
+
 namespace DGNC {
     enum TaskRequest_Status {
         error   = -1,
@@ -49,6 +51,8 @@ namespace DGNC {
             {"api_key",     ""}
         };
         std::mutex mtx_access__url_components;
+
+        friend class bit7z_callbackClass;
 
         std::thread thread_dataGatherer;
         friend void threadFunc(DGNC::DataGatherer& DG_ref);
