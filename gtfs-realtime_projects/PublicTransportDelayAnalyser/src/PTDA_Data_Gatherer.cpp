@@ -45,6 +45,11 @@ public:
 
     }
 
+    void setExtractorCallbacks(bit7z::BitFileExtractor& bit7z_ref) {
+        
+        bit7z_ref.setTotalCallback([this](uint64_t var) {callback_total(var);});
+        bit7z_ref.setProgressCallback([this](uint64_t var) {callback_progress(var)});
+    }
 
     void callback_total(uint64_t _total_size) {
         this->total = _total_size;
@@ -216,10 +221,9 @@ void DGNC::threadFunc(DGNC::DataGatherer& DG_ref) {
             /// ---------- Uncompressing downloaded raw data files ----------
 
             try {
-                using namespace bit7z;
 
-                Bit7zLibrary lib{"C:\\Program Files\\7-Zip\\7z.dll"};
-                BitFileExtractor extractor{lib, BitFormat::SevenZip};
+                bit7z::Bit7zLibrary lib{"C:\\Program Files\\7-Zip\\7z.dll"};
+                bit7z::BitFileExtractor extractor{lib, BitFormat::SevenZip};
 
                 bit7z_callbackClass callbackClass(DG_ref);
 
@@ -227,8 +231,9 @@ void DGNC::threadFunc(DGNC::DataGatherer& DG_ref) {
                 // extractor.setProgressCallback(callbackClass.callback_progress);
                 // extractor.setTotalCallback(bit7z_callbackClass::callback_total(&DG_ref));
                 // extractor.setProgressCallback(bit7z_callbackClass::callback_progress(&DG_ref));
-                extractor.setTotalCallback([DG_ref](uint64_t var) {DG_ref.callback_total(var);});
-                extractor.setProgressCallback([DG_ref](uint64_t var) {DG_ref.callback_progress(var)});
+                // extractor.setTotalCallback([DG_ref](uint64_t var) {DG_ref.callback_total(var);});
+                // extractor.setProgressCallback([DG_ref](uint64_t var) {DG_ref.callback_progress(var)});
+                callbackClass.setExtractorCallbacks(extractor);
 
                 u_lck_accss__path_dirTempCompressed.lock();
                 extractor.extract(zipFilename_fullPath, DG_ref.path_dirTempCompressed);
