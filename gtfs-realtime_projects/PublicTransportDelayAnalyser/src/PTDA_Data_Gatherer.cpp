@@ -48,7 +48,7 @@ public:
     void setExtractorCallbacks(bit7z::BitFileExtractor& bit7z_ref) {
         
         bit7z_ref.setTotalCallback([this](uint64_t var) {callback_total(var);});
-        bit7z_ref.setProgressCallback([this](uint64_t var) {callback_progress(var)});
+        bit7z_ref.setProgressCallback([this](uint64_t var) {callback_progress(var); return true;});
     }
 
     void callback_total(uint64_t _total_size) {
@@ -65,6 +65,7 @@ public:
 
         std::unique_lock<std::mutex> u_lck(DG_refObj.mtx_access__progressInfo, std::defer_lock);
         
+        size_t strLen_total = Useful::formatNumber(this->total, 0, 0, "right", false, true).size();
         u_lck.lock();
         std::string tempStr = DG_refObj.progressInfo.message.str();
         size_t dumpIdx = std::string::npos;
@@ -79,8 +80,8 @@ public:
         // progressInfo.message.clear();
         DG_refObj.progressInfo.message.str(tempStr.substr(0, dumpIdx));
 
-        DG_refObj.progressInfo.message << std::this_thread::get_id() << " | [bit7z] Decompression progress: " << Useful::formatNumber(progressInfo.progress.percent,5,1) << "% ";
-        DG_refObj.progressInfo.message << "(" << Useful::formatNumber(DG_refObj.progressInfo.progress.now,strLen_total,0,"right",false,true) << "/" << (progressInfo.progress.total,strLen_total,0,"right",false,true) <<" bytes)\n";
+        DG_refObj.progressInfo.message << std::this_thread::get_id() << " | [bit7z] Decompression progress: " << Useful::formatNumber(DG_refObj.progressInfo.progress.percent,5,1) << "% ";
+        DG_refObj.progressInfo.message << "(" << Useful::formatNumber(DG_refObj.progressInfo.progress.now, strLen_total,0,"right",false,true) << "/" << (DG_refObj.progressInfo.progress.total, strLen_total,0,"right",false,true) <<" bytes)\n";
     
         u_lck.unlock();
 
@@ -227,12 +228,6 @@ void DGNC::threadFunc(DGNC::DataGatherer& DG_ref) {
 
                 bit7z_callbackClass callbackClass(DG_ref);
 
-                // extractor.setTotalCallback(callbackClass.callback_total);
-                // extractor.setProgressCallback(callbackClass.callback_progress);
-                // extractor.setTotalCallback(bit7z_callbackClass::callback_total(&DG_ref));
-                // extractor.setProgressCallback(bit7z_callbackClass::callback_progress(&DG_ref));
-                // extractor.setTotalCallback([DG_ref](uint64_t var) {DG_ref.callback_total(var);});
-                // extractor.setProgressCallback([DG_ref](uint64_t var) {DG_ref.callback_progress(var)});
                 callbackClass.setExtractorCallbacks(extractor);
 
                 u_lck_accss__path_dirTempCompressed.lock();
@@ -250,6 +245,7 @@ void DGNC::threadFunc(DGNC::DataGatherer& DG_ref) {
             
             /// ---------- "Processing"/parsing the raw data files ----------
 
+            
 
         }
 
