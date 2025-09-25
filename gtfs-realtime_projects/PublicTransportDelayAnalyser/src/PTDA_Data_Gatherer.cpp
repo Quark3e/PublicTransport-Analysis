@@ -1,6 +1,64 @@
 
 #include <PTDA_Data_Gatherer.hpp>
 
+/**
+ * 
+ * 
+ */
+void load_stopInfo_map(
+    std::string dirPath_staticHistorical,
+    std::unordered_map<std::string, stopInfo>& ref_stopInfoMapToFill,
+    size_t numMultithreadCount = 1
+) {
+    if(numMultithreadCount==0) throw std::runtime_error("ERROR: numMultithreadCount==0.");
+
+    if(!(dirPath_staticHistorical.back()=='/' || dirPath_staticHistorical.back()=='\\')) dirPath_staticHistorical+='/';
+    std::ifstream fileRead_stops(dirPath_staticHistorical+"stops.csv");
+    std::ifstream fileRead_stop_times(dirPath_staticHistorical+"stop_times.csv");
+    if(!fileRead_stops.is_open()) throw std::runtime_error(std::string("Failed to open stops.csv from path \"")+dirPath_staticHistorical+"stops.csv\".");
+    if(!fileRead_stop_times.is_open()) throw std::runtime_error(std::string("Failed to open stop_times.csv from path \"")+dirPath_staticHistorical+"stop_times.csv\".");
+
+    ref_stopInfoMapToFill.clear();
+    fileRead_stops.ignore(1);
+    for(std::string _line; std::getline(fileRead_stops, _line); ) {
+        size_t pos_temp = 0;
+        size_t pos_delim = _line.find(',');
+        std::string str__stop_id = _line.substr(pos_delim);
+        if(str__stop_id.size()<16) continue;
+
+        std::string str__stop_name = _line.substr(pos_delim++, (pos_temp = _line.find(',', pos_delim))-pos_delim); pos_delim = pos_temp;
+        Pos2d<float> cont__map_coord;
+        cont__map_coord.x = std::stof(_line.substr(pos_delim++, (pos_temp = _line.find(',', pos_delim))-pos_delim)); pos_delim = pos_temp;
+        cont__map_coord.y = std::stof(_line.substr(pos_delim++, (pos_temp = _line.find(',', pos_delim))-pos_delim)); pos_delim = pos_temp;
+        
+        ref_stopInfoMapToFill[str__stop_id] = {str__stop_id, str__stop_name, cont__map_coord};
+    }
+    fileRead_stops.close();
+
+    fileRead_stop_times.ignore(1);
+    for(std::string _line; std::getline(fileRead_stop_times, _line); ) {
+        size_t pos_temp = 0;
+        size_t pos_delim = _line.find(',');
+        std::string str__trip_id = _line.substr(pos_delim);
+        if(str__trip_id.size()<16) continue;
+
+        std::string str__arrival_time   = _line.substr(pos_delim++, (pos_temp = _line.find(',', pos_delim))-pos_delim); pos_delim = pos_temp;
+        std::string str__departure_time = _line.substr(pos_delim++, (pos_temp = _line.find(',', pos_delim))-pos_delim); pos_delim = pos_temp;
+        std::string str__stop_id        = _line.substr(pos_delim++, (pos_temp = _line.find(',', pos_delim))-pos_delim); pos_delim = pos_temp;
+        std::string str__stop_sequence  = _line.substr(pos_delim++, (pos_temp = _line.find(',', pos_delim))-pos_delim); pos_delim = pos_temp;
+        std::string str__stop_headsign  = _line.substr(pos_delim++, (pos_temp = _line.find(',', pos_delim))-pos_delim); pos_delim = pos_temp;
+        
+        ref_stopInfoMapToFill[str__stop_id].tripRelatives.push_back({
+            str__trip_id,
+            Useful::time_string_to_tm(str__arrival_time),
+            Useful::time_string_to_tm(str__departure_time),
+            std::stoul(str__stop_sequence),
+            str__stop_headsign
+        });
+    }
+    fileRead_stop_times.close();
+
+}
 
 class bit7z_callbackClass {
 private:
@@ -128,7 +186,7 @@ void DGNC::threadFunc(DGNC::DataGatherer& DG_ref) {
     std::unique_lock<std::mutex> u_lck_accss__path_dirDelayFileOut(DG_ref.mtx_access__path_dirDelayFileOut, std::defer_lock);
 
     std::thread::id threadID = std::this_thread::get_id();
-
+    
 
     DG_ref.threadRunning = true;
     DG_ref.status = running;

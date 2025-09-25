@@ -30,6 +30,7 @@
 #include <filesystem>
 #include <cstring>
 
+#include <charconv>
 
 #ifndef _max
 #define _max(a,b)            (((a) > (b)) ? (a) : (b))
@@ -405,6 +406,33 @@ namespace Useful {
             count+=pos;
             pos = text->find(toReplace, pos+1);
         }
+    }
+
+    struct tm time_string_to_tm(const std::string& time_str) {
+        if (time_str.length() != 8 || time_str[2] != ':' || time_str[5] != ':') {
+            throw std::invalid_argument("Invalid time format. Expected 'hh:mm:ss'");
+        }
+        
+        int hours, minutes, seconds;
+        
+        auto [ptr_h, ec_h] = std::from_chars(time_str.data(), time_str.data() + 2, hours);
+        auto [ptr_m, ec_m] = std::from_chars(time_str.data() + 3, time_str.data() + 5, minutes);
+        auto [ptr_s, ec_s] = std::from_chars(time_str.data() + 6, time_str.data() + 8, seconds);
+        
+        if (ec_h != std::errc() || ec_m != std::errc() || ec_s != std::errc()) {
+            throw std::invalid_argument("Failed to parse time components");
+        }
+        
+        if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59 || seconds < 0 || seconds > 59) {
+            throw std::out_of_range("Time values out of valid range");
+        }
+        
+        struct tm time_struct = {};
+        time_struct.tm_hour = hours;
+        time_struct.tm_min = minutes;
+        time_struct.tm_sec = seconds;
+        
+        return time_struct;
     }
 
     template<class T>

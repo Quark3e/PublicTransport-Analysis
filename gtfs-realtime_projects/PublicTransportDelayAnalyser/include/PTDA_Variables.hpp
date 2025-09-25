@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include <Pos2d.hpp>
 
 struct STE {
     int32_t delay;  // [1]
@@ -44,6 +45,22 @@ struct STU_refd : public STU {
     int64_t filename_epoch;
 
     STU_refd(STU _stu, std::string _trip_id, uint32_t _stu_idx, int64_t _file_epoch): STU{_stu}, trip_id{_trip_id}, STU_idx{_stu_idx}, filename_epoch{_file_epoch} {}
+};
+
+
+struct stopInfo_tripRelatives {
+    std::string trip_id;
+    tm arrival_time;
+    tm departure_time;
+    uint32_t stop_sequence;
+    std::string stop_headsign;
+};
+
+struct stopInfo {
+    std::string stop_id;
+    std::string stop_name;
+    Pos2d<float> map_coord;
+    std::vector<stopInfo_tripRelatives> tripRelatives;
 };
 
 
