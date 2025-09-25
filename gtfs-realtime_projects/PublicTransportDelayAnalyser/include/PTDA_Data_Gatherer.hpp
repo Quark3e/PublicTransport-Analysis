@@ -70,6 +70,14 @@ namespace DGNC {
         std::vector<STU_refd> data_shared;
         std::mutex mtx_access__data_shared;
         
+        /**
+         * @brief Callback function type used for reporting errors during update operations.
+         *
+         * This function pointer is intended to be assigned to a callback that handles error events.
+         * If no callback is set, the value should be nullptr.
+         * 
+         * The function should contain a mutex already included used for updating notifications.
+         */
         funcType_updateCallback callback_errors = nullptr;
         funcType_updateCallback callback_updates = nullptr;
         std::mutex mtx_access__callback_errors;
@@ -88,8 +96,16 @@ namespace DGNC {
 
         std::atomic<bool> threadRunning{false};
         static inline bool classInit = false;
+    
+        std::unordered_map<std::string, stopInfo>& stopInfoMap_ref;
     public:
-        DataGatherer(std::string _api_key, bool _initialise=true, std::string _path_dirDelayFileOut="", std::string _path_tempDirCompressed="");
+        DataGatherer(
+            std::string _api_key,
+            std::unordered_map<std::string, stopInfo>& _refStopInfoMap,
+            bool _initialise=true,
+            std::string _path_dirDelayFileOut="",
+            std::string _path_tempDirCompressed=""
+        );
         ~DataGatherer();
     
         int init();

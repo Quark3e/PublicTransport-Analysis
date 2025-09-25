@@ -60,6 +60,21 @@ void load_stopInfo_map(
 
 }
 
+void func_depthSearch(std::string _dirPath, std::list<std::string> *_storeResult, int _maxDepth, size_t *_numDirSearched) {
+    // int _depthCount = 0;
+    for(auto _entry : std::filesystem::directory_iterator(_dirPath)) {
+        if(std::filesystem::is_directory(_entry.path()) && _maxDepth>0) {
+            if(_numDirSearched) (*_numDirSearched) += 1;
+            func_depthSearch(_entry.path().string(), _storeResult, _maxDepth-1, _numDirSearched);
+        }
+        else if(_entry.path().extension()==".pb") {
+            _storeResult->push_back(_entry.path().string());
+        }
+    }
+};
+
+
+
 class bit7z_callbackClass {
 private:
     uint64_t    total;
@@ -299,12 +314,51 @@ void DGNC::threadFunc(DGNC::DataGatherer& DG_ref) {
                 if(DG_ref.callback_errors) DG_ref.callback_errors(DG_ref.progressInfo);
                 u_lck_accss__callback_errors.unlock();
                 u_lck_accss__progressInfo.unlock();
+                continue;
             }
             
             /// ---------- "Processing"/parsing the raw data files ----------
 
-            
+            std::list<std::string> dataFilesToProcess;    
+            size_t count_searchedDirs = 0;
+            u_lck_accss__path_dirDirTempCompressed.lock();
+            func_depthSearch(DG_ref.path_dirTempCompressed, &dataFilesToProcess, 10, &count_searchedDirs);
+            u_lck_accss__path_dirDirTempCompressed.unlock();
+            if(dataFilesToProcess.size()==0) {
+                u_lck_accss__progressInfo.lock();
+                DG_ref.progressInfo.message << threadID << " | ERROR: func_depthSearch() result: dataFilesToProcess.size()==0 \n";
+                u_lck_accss__callback_errors.lock();
+                if(DG_ref.callback_errors) DG_ref.callback_errors(DG_ref.progressInfo);
+                u_lck_accss__callback_errors.unlock();
+                u_lck_accss__progressInfo.unlock();
+                continue;
+            }
 
+            DG_ref.data_private.Clear();
+
+            // ----- load every data file into TripUpdate and get the total STU_size for progress measurement 
+
+            transit_realtime::TripUpdate tempTripUpdHolder;
+            size_t num_failedIstreams = 0;
+            size_t TotalNum_STU = 0;
+            auto itr_entry = dataFilesToProcess.begin();
+            for(size_t i=0; i<dataFilesToProcess.size(); i++) {
+                std::ifstream entryFile(*itr_entry, std::ios::in | std::ios::binary);
+                if(!entryFile.is_open()) {
+                    num_failedIstreams++;
+                    std::advance(itr_entry, 1);
+                    continue;
+                }
+                tempTripUpdHolder.ParseFromIstream(&entryFile);
+                TotalNum_STU += tempTripUpdHolder.stop_time_update_size();
+
+                tempTripUpdHolder.Clear();
+                entryFile.close();
+                std::advance(itr_entry, 1);
+            }
+
+            auto itr_entriesToProcess = dataFilesToProcess.begin();
+            
         }
 
     }
@@ -322,8 +376,14 @@ void DGNC::threadFunc_Task__ParseDelays() {
 }
 
 
-DGNC::DataGatherer::DataGatherer(std::string _api_key, bool _initialise=true, std::string _path_dirDelayFileOut="", std::string _path_tempDirCompressed=""): 
-    path_dirDelayFileOut(_path_dirDelayFileOut), path_dirTempCompressed(_path_tempDirCompressed)
+DGNC::DataGatherer::DataGatherer(
+    std::string _api_key,
+    std::unordered_map<std::string, stopInfo>& _refStopInfoMap,
+    bool _initialise,
+    std::string _path_dirDelayFileOut,
+    std::string _path_tempDirCompressed
+): 
+    stopInfoMap_ref(_refStopInfoMap), path_dirDelayFileOut(_path_dirDelayFileOut), path_dirTempCompressed(_path_tempDirCompressed)
 {
     this->url_components["api_key"] = _api_key;
     if(_initialise) this->init();
