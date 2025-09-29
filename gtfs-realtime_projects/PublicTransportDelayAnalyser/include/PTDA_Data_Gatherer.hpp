@@ -9,6 +9,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <functional>
 
 #include <filesystem>
 
@@ -23,6 +24,7 @@
 
 using funcType_updateCallback = void(*)(PTDA_Coms&);
 // typedef void(*funcType_updateCallback)(PTDA_Coms*);
+using callbackType_finished = std::function<void(std::map<std::string, std::vector<STU_refd>>)>;
 
 class bit7z_callbackClass;
 
@@ -41,6 +43,7 @@ namespace DGNC {
     struct TaskRequest {
         std::vector<tm> dates;
         std::vector<std::string> stopIDs;
+        size_t numParallelThreads = 5;
     };
 
     class DataGatherer {
@@ -64,11 +67,10 @@ namespace DGNC {
         friend void threadFunc_Task__ParseDelays();
 
         TaskRequest currentTaskRequest;
-        std::mutex mtx_access__TaskRequest;
+        // std::mutex mtx_access__TaskRequest;
         
-        std::vector<STU_refd> data_private;
-        std::vector<STU_refd> data_shared;
-        std::mutex mtx_access__data_shared;
+        std::map<std::string, std::vector<STU_refd>> data_delays;
+
         
         /**
          * @brief Callback function type used for reporting errors during update operations.
@@ -78,10 +80,14 @@ namespace DGNC {
          * 
          * The function should contain a mutex already included used for updating notifications.
          */
-        funcType_updateCallback callback_errors = nullptr;
-        funcType_updateCallback callback_updates = nullptr;
+        funcType_updateCallback callback_errors     = nullptr;
+        funcType_updateCallback callback_updates    = nullptr;
         std::mutex mtx_access__callback_errors;
         std::mutex mtx_access__callback_updates;
+
+        bool isDefined__callback_finished = false;
+        callbackType_finished   callback_finished;
+        std::mutex mtx_access__callback_finished;
         
         static inline PTDA_Coms progressInfo;
         static inline std::mutex mtx_access__progressInfo;
@@ -98,10 +104,12 @@ namespace DGNC {
         static inline bool classInit = false;
     
         std::unordered_map<std::string, stopInfo>& stopInfoMap_ref;
+        std::unordered_map<std::string, std::unordered_map<uint32_t, std::string>>& stopInfoReverseLookup;
     public:
         DataGatherer(
             std::string _api_key,
             std::unordered_map<std::string, stopInfo>& _refStopInfoMap,
+            std::unordered_map<std::string, std::unordered_map<uint32_t, std::string>>& _refStopInfoReverseLookupmap,
             bool _initialise=true,
             std::string _path_dirDelayFileOut="",
             std::string _path_tempDirCompressed=""
@@ -116,16 +124,16 @@ namespace DGNC {
         
         int setCallback_errors(funcType_updateCallback _callbackFunc);
         int setCallback_updates(funcType_updateCallback _callbackFunc);
+        int setCallback_finished(callbackType_finished _callbackFunc);
 
         void setPath_dirDelayFileOut(std::string _newPath);
         void setPath_dirTempCompressed(std::string _newPath);
 
         TaskRequest             getCurrentRequest();
-        std::vector<STU_refd>   getData();
         PTDA_Coms               getProgressInfo();
         TaskRequest_Status      getStatus();
 
-        void swapSharedData(std::vector<STU_refd>& _refToSwap);
+        std::map<std::string, std::vector<STU_refd>>& extractData(std::map<std::string, std::vector<STU_refd>>& _toSwapTo);
     };
 };
 

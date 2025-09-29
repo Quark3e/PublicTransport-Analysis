@@ -111,18 +111,27 @@ namespace Useful {
             return *this;
         }
 
+        double getMantissa(int* prefix_i=nullptr) const {
+            if(prefix_i) *prefix_i = 0;
+            double mantissa = this->size;
+
+            /// Reduce and fit the size value into one of the prefixes.
+            for(; mantissa >= 1024.0; mantissa /= 1024.0) {
+                if(prefix_i) (*prefix_i)++;
+            }
+            
+            return std::ceil(mantissa * 10.0) / 10.0;
+        }
+
         std::string stringify() const {
             return this->stringify(this->size);
         }
         std::string stringify(std::uintmax_t _val) const {
-            int i{};
-            double mantissa = _val;
+            int i=0;
+            const double mantissa = getMantissa(&i);
+            
             std::stringstream ss;
-            
-            /// Reduce and fit the size value into one of the prefixes.
-            for(; mantissa >= 1024.0; mantissa /= 1024.0, i++) {}
-            
-            ss << std::ceil(mantissa * 10.0) / 10.0 << i["BKMGTPE"];
+            ss << mantissa << i["BKMGTPE"];
             if(i) ss << "B";
             return ss.str();
         }
@@ -130,7 +139,6 @@ namespace Useful {
         operator std::string() {
             return stringify();
         }
-
 
         friend auto operator<<(std::ostream &os, HumanReadable const &hr) -> std::ostream& {
             os << hr.stringify();

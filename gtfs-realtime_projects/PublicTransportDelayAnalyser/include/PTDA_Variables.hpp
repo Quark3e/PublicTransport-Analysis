@@ -55,7 +55,6 @@ struct stopInfo_tripRelatives {
     uint32_t stop_sequence;
     std::string stop_headsign;
 };
-
 struct stopInfo {
     std::string stop_id;
     std::string stop_name;
@@ -63,7 +62,10 @@ struct stopInfo {
     std::vector<stopInfo_tripRelatives> tripRelatives;
 };
 
-
+struct exc_DebugStruct {
+    std::string what;
+    std::string where;
+};
 
 
 
