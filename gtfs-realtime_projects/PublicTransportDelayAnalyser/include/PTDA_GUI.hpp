@@ -65,7 +65,7 @@ class GUICL {
         ImGuiWindowFlags_NoBackground
     ;
 
-    GUICL(bool _init=true, size_t _width=dim__program.x, size_t _height=dim__program.y);
+    GUICL(bool _init=true, size_t _programWidth=dim__program.x, size_t _programHeight=dim__program.y);
     ~GUICL();
 
     bool init();
@@ -73,13 +73,13 @@ class GUICL {
     void newFrame();
     void endFrame();
 
-    void mainDrive();
-
-    const bool running();
-
-    void exit();
-
     void setCallback_closing(callbackType_closeSignal _callbackFunc);
-};
+
+    bool isRunning() const;
+    bool isInit() const;
+
+    
+    friend void GUI_drive();
+}; ///NOTE: If multiple instances won't be created, all of this should be in a namespace instead of a class.
 
 #endif //HPP__PTDA_GUI

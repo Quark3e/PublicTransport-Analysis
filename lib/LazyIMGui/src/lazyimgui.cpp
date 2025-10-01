@@ -51,7 +51,7 @@ GUINC::lazyimgui::~lazyimgui() {
 bool GUINC::lazyimgui::init() {
     if(__init) {
         std::cout << "GUINC::lazyimgui::init(): WARNING: member function 'init()' is called when this class instance has already been initialised." << std::endl;
-        return true;
+        return false;
     }
 
     al_init();
