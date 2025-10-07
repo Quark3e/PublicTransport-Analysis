@@ -14,7 +14,6 @@
 #include <functional>
 
 
-using callbackType_closeSignal = std::function<void()>;
 
 template<typename _VAR>
 inline ImVec2 toImVec2(Pos2d<_VAR> toConv) {
@@ -25,37 +24,39 @@ inline Pos2d<float> toPos2d(ImVec2 toConv) {
 }
 
 
-inline Pos2d<float> dim__program{1000, 700};
+namespace GUINC {
 
-// window 0 widget dimensions and top-left corner positions
-inline Pos2d<float> dim_win0_stopID_selects{100, 500};
-inline Pos2d<float> dim_win0_graphWin{900, 500};
+    using callbackType_closeSignal = std::function<void()>;
 
-inline Pos2d<float> pos_win0_stopID_selects{0, 0};
-inline Pos2d<float> pos_win0_graphWin{dim_win0_stopID_selects.x, 0};
+    inline Pos2d<float> dim__program{1000, 700};
 
-// window 1 widget dimensions and top-left corner positions
-inline Pos2d<float> dim_win1_stopID_map{900, 500};
-inline Pos2d<float> dim_win1_selects_stopID_list{100, 500};
+    // window 0 widget dimensions and top-left corner positions
+    inline Pos2d<float> dim_win0_stopID_selects{100, 500};
+    inline Pos2d<float> dim_win0_graphWin{900, 500};
 
-inline Pos2d<float> pos_win1_stopID_map{0, 0};
-inline Pos2d<float> pos_win1_selects_stopID_list{dim_win1_stopID_map.x, 0};
+    inline Pos2d<float> pos_win0_stopID_selects{0, 0};
+    inline Pos2d<float> pos_win0_graphWin{dim_win0_stopID_selects.x, 0};
+
+    // window 1 widget dimensions and top-left corner positions
+    inline Pos2d<float> dim_win1_stopID_map{900, 500};
+    inline Pos2d<float> dim_win1_selects_stopID_list{100, 500};
+
+    inline Pos2d<float> pos_win1_stopID_map{0, 0};
+    inline Pos2d<float> pos_win1_selects_stopID_list{dim_win1_stopID_map.x, 0};
 
 
-class GUICL {
-    private:
-    ALLEGRO_DISPLAY*        __display = nullptr;
-    ALLEGRO_EVENT_QUEUE*    __queue = nullptr;
+    ALLEGRO_DISPLAY*        __display   = nullptr;
+    ALLEGRO_EVENT_QUEUE*    __queue     = nullptr;
 
     bool __frameStarted = false;
     bool __init = false;
     bool __running = false;
+    std::atomic<bool> run{true};
 
     bool isDefined_callback_closing{false};
     callbackType_closeSignal callback_closing;
 
-    public:
-    ImGuiWindowFlags winFlags_main = 
+    ImGuiWindowFlags winFlags_Main_default =
         ImGuiWindowFlags_NoMove |
         ImGuiWindowFlags_NoResize |
         ImGuiWindowFlags_NoCollapse |
@@ -64,22 +65,18 @@ class GUICL {
         ImGuiWindowFlags_NoScrollbar |
         ImGuiWindowFlags_NoBackground
     ;
-
-    GUICL(bool _init=true, size_t _programWidth=dim__program.x, size_t _programHeight=dim__program.y);
-    ~GUICL();
+    
 
     bool init();
+    bool close();
 
-    void newFrame();
-    void endFrame();
+    void _newFrame();
+    void _endFrame();
 
-    void setCallback_closing(callbackType_closeSignal _callbackFunc);
 
-    bool isRunning() const;
-    bool isInit() const;
+    void Drive();
 
-    
-    friend void GUI_drive();
-}; ///NOTE: If multiple instances won't be created, all of this should be in a namespace instead of a class.
+
+};
 
 #endif //HPP__PTDA_GUI
