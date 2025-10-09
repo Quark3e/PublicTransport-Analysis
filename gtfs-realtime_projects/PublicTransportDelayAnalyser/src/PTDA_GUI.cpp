@@ -37,7 +37,7 @@ bool GUINC::init() {
 
     return true;
 }
-bool GUINC::close() {
+bool GUINC::close() {+
     if(!GUINC::__init) {
         std::cerr << "GUINC::close() : Failed to the GUINC library. close() called without GUINC being initialised.\n";
         return false;
@@ -108,8 +108,39 @@ void GUINC::_endFrame() {
 
 
 
+void GUINC::draw_win0() { /// parsed data graph displayer
+
+
+    ImGui::SetCursorPos(toImVec2(pos_win0_stopID_selects));
+    if(ImGui::BeginChild("stop_ID_selects", toImVec2(dim_win0_stopID_selects))) {
+
+        ImGui::EndChild();
+    }
+    ImGui::SetCursorPos(toImVec2(pos_win0_graphWin));
+    if(ImGui::BeginChild("graph_win", toImVec2(dim_win0_graphWin))) {
+
+        ImGui::EndChild();
+    }
+}
+void GUINC::draw_win1() { /// stop_id selector for Task creation
+
+
+    ImGui::SetCursorPos(toImVec2(pos_win1_stopID_map));
+    if(ImGui::BeginChild("stopID_map", toImVec2(dim_win1_stopID_map))) {
+
+        ImGui::EndChild();
+    }
+    ImGui::SetCursorPos(toImVec2(pos_win1_selects_stopID_list));
+    if(ImGui::BeginChild("stopID_selects_list", toImVec2(pos_win1_selects_stopID_list))) {
+
+        ImGui::EndChild();
+    }
+
+}
 
 void GUINC::Drive() {
+    int selected_win = 0;
+
 
     if(!GUINC::init()) {
         exit(1);
@@ -119,7 +150,22 @@ void GUINC::Drive() {
         
         while(GUINC::run.load()) {
             GUINC::_newFrame();
-    
+            ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+            if(ImGui::BeginTabBar("windows", ImGuiTabBarFlags_DrawSelectedOverline)) {
+
+                if(ImGui::BeginTabItem("win0_graphDisplayer")) {
+                    draw_win0();
+                    ImGui::EndTabItem();
+                }
+                if(ImGui::BeginTabItem("win1_TaskRequester")) {
+                    draw_win1();
+                    ImGui::EndTabItem();
+                }
+
+                ImGui::EndTabBar();
+            }
+
     
             GUINC::_endFrame();
         }

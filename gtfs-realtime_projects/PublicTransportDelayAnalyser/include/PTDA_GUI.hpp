@@ -74,6 +74,9 @@ namespace GUINC {
     void _endFrame();
 
 
+    void draw_win0();
+    void draw_win1();
+
     void Drive();
 
 

@@ -926,6 +926,9 @@ void DGNC::threadFunc(DGNC::DataGatherer& DG_ref) {
                 continue;
             }
 
+            // ----- Save processed data into dataset directory
+            
+
         }
 
         DG_ref.newTaskRequested = false;
